@@ -1,1 +1,0 @@
-The build files in instances/client/build which were created after npm run build have to be placed here.

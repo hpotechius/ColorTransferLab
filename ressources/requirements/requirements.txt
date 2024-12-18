@@ -42,3 +42,6 @@ pyamg==5.0.1
 brisque==0.0.15
 func_timeout==4.3.5
 # ColorTransferLib==1.0.0.post3
+Flask-SocketIO
+aiortc
+aiohttp

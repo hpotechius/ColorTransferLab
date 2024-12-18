@@ -1,15 +1,15 @@
 {
-  "SI1": {
-    "protocol": "https",
-    "lan": "192.168.178.31",
+  "RelayServer": {
+    "protocol": "http",
+    "lan": "192.168.178.200",
     "wan": "potechius.com",
     "port": 8002
   },
-  "SI2": {
+  "ComputationServer": {
     "name": "Local Server",
-    "protocol": "http",
-    "lan": "192.168.178.191",
-    "wan": "192.168.178.191",
+    "protocol": "https",
+    "lan": "192.168.178.200",
+    "wan": "192.168.178.200",
     "port": 9001,
     "visibility": "private"
   }

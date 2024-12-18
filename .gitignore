@@ -1,12 +1,14 @@
-instances/client/build/
-instances/client/node_modules/
-instances/client/package-lock.json
-instances/client/public/data/
-instances/client/public/previews/
+instances/WebServer/build/
+instances/WebServer/node_modules/
+instances/WebServer/package-lock.json
+instances/WebServer/public/data/
+instances/WebServer/public/previews/
 
-instances/server_2/data/
-instances/server_2/previews/
-instances/server_2/Models/
+instances/DatabaseServer/data/
+instances/DatabaseServer/previews/
+instances/DatabaseServer/files/data/
+instances/DatabaseServer/files/previews/
+instances/DatabaseServer/Models/
 
 instances/server_1/ColorTransferLab
 

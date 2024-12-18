@@ -1,0 +1,44 @@
+@import 'settings/Global.scss';
+
+.renderer_lightfield{
+    position: absolute;
+    display: none;
+    width: 100%;
+    height: calc(100%);
+    // background-color: green;
+    background-color: $grey;
+    // background-color: black;
+}
+
+.lfr_button_settings{
+    position: absolute;
+    width: 15px;
+    padding: 5px;
+    height: 15px;
+    z-index: 9998;
+    right: 0px;
+}
+
+.lfr_field_settings{
+    background-color: $darkgrey;
+    opacity: 0.9;
+    position: absolute;
+    bottom: 0px;
+    width: 100%;
+    //padding: 5px;
+    //height: 100%;
+    z-index: 99999;
+}
+
+.lfr_field_settings_table_cell{
+    width: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.106);
+}
+
+.lfr_button_settings_texture_icon{
+    height: 100%;
+}
+
+.lfr_button_settings_texture_icon:hover{
+    filter: brightness(1.5);
+}

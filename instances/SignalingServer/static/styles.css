@@ -1,0 +1,95 @@
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(to right, black, grey, grey, grey, black);
+    margin: 10px 100px 10px;
+    padding: 0;
+}
+
+h1 {
+    color: white;
+    text-align: center;
+    margin-top: 20px;
+}
+
+p {
+    color: white;
+    margin-top: 20px;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    background-color: white;
+    opacity: 0.8;
+    border-radius: 10px;
+    /* margin: 50px; */
+}
+
+/* thead {
+    background-color: #2E2E2E;
+    color: white;
+} */
+
+th, td {
+    padding: 10px;
+    text-align: left;
+    border-top: 1px solid #ddd;
+}
+
+th {
+    background-color: #2E2E2E;
+    color: white;
+    cursor: pointer;
+}
+
+li {
+    background-color: #FF0000;
+    margin: 10px auto;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 80%;
+    max-width: 600px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.status-box {
+    background-color: red;
+    color: black;
+    border-radius: 5px;
+    padding: 5px;
+    display: inline-block;
+}
+
+.status-Idle {
+    background-color: green;
+}
+
+.status-Busy {
+    background-color: red;
+}
+
+.status-Connected {
+    background-color: green;
+}
+
+.type-box {
+    background-color: gray;
+    color: black;
+    border-radius: 5px;
+    padding: 5px;
+    display: inline-block;
+}
+
+.type-Database {
+    background-color: orange;
+}
+
+.type-CEServer {
+    background-color: lightblue;
+}

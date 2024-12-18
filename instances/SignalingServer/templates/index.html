@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Connected Clients</title>
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+        <!-- <link rel="stylesheet" type="text/css" href="styles.css"> -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+        <script type="text/javascript">
+            document.addEventListener("DOMContentLoaded", function() {
+                var socket = io();
+
+                socket.on('update_clients', function(clients) {
+                    var tbody = document.querySelector('#clientsTable tbody');
+                    tbody.innerHTML = '';
+                    for (var cid in clients) {
+                        var client = clients[cid];
+                        var connected_cl = client.connected_cl
+                        var connected_db = client.connected_db
+                        var connected_ce = client.connected_ce
+                        var row = document.createElement('tr');
+                        var id_out = "";
+                        if(client.type === "Client") {
+                            id_out = "<b>Client: " + cid + "</b><br>Database: " + connected_db;
+                        } else if (client.type === "Database") {
+                            id_out = "Client: " + connected_cl + "<br><b>Database: " + cid + "</b>";
+                        } else {
+                            id_out = cid;
+                        }
+                        row.innerHTML = `
+                            <td>${client.name}</td>
+                            <td>${id_out}</td>
+                            <td>${client.ip_address}</td>
+                            <td>${client.country}</td>
+                            <td>00d 00h 00m 00s</td>
+                            <td><span class="type-box type-${client.type}"><b>${client.type}</b></span></td>
+                            <td><span class="status-box status-${client.status}"><b>${client.status}</b></span></td>
+                        `;
+                        tbody.appendChild(row);
+                    }
+                });
+            });
+        </script>
+    </head>
+    <body>
+        <h1>Connected Instances</h1>
+        <p><b>WebRTC Signaling Server</b>: https://relay.potechius.com</p>
+        <table id="clientsTable">
+            <thead>
+                <tr>
+                    <th onclick="sortTable(0)">Name</th>
+                    <th onclick="sortTable(1)">ID</th>
+                    <th onclick="sortTable(2)">IP-Address</th>
+                    <th onclick="sortTable(3)">Country</th>
+                    <th onclick="sortTable(4)">Uptime</th>
+                    <th onclick="sortTable(5)">Type</th>
+                    <th onclick="sortTable(6)">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cid, client in clients.items() %}
+                    <tr>
+                        <td>{{ client.name }}</td>
+                        <!-- <td>{{ cid }}<br>DB: ...<br>CE: ...</td> -->
+                        <td>
+                            <script>
+                            var typeC = "{{ client.type }}";
+                            var out = ""
+                            if(typeC === "Client") {
+                                out = "<b>Client: {{ cid }}</b><br>Database: {{ client.connected_db }}";
+                            } else if (typeC === "Database") {
+                                out = "Client: {{ client.connected_cl }}<br><b>Database: {{ cid }}</b>";
+                            } else {
+                                out = "{{ cid }}";
+                            }
+                            document.write(out);
+                            </script>
+                        </td>
+                        <td>{{ client.ip_address }}</td>
+                        <td>{{ client.country }}</td>
+                        <td>
+                            <script>
+                            var diff = Math.floor(Date.now() / 1000) - {{ client.register_time }};
+                            var days = Math.floor(diff / 86400).toString().padStart(2, '0');
+                            var hours = Math.floor((diff % 86400) / 3600).toString().padStart(2, '0');
+                            var minutes = Math.floor((diff % 3600) / 60).toString().padStart(2, '0');
+                            var seconds = Math.round(diff % 60).toString().padStart(2, '0');
+                            document.write(days + "d " + hours + "h " + minutes + "m " + seconds + "s");
+                            </script>
+                        </td>
+                        <td><span class="type-box type-{{ client.type }}"><b>{{ client.type }}</b></span></td>
+                        <td><span class="status-box status-{{ client.status }}"><b>{{ client.status }}</b></span></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <script src="{{ url_for('static', filename='scripts.js') }}"></script>
+        <!-- <script src="scripts.js"></script> -->
+    </body>
+</html>

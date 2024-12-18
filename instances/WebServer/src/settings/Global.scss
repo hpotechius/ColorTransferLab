@@ -1,0 +1,223 @@
+/*
+Copyright 2024 by Herbert Potechius,
+Technical University of Berlin
+Faculty IV - Electrical Engineering and Computer Science - Institute of Telecommunication Systems - Communication Systems Group
+All rights reserved.
+This file is released under the "MIT License Agreement".
+Please see the LICENSE file that should have been included as part of this package.
+*/
+
+
+/******************************************************************************************************************
+ ******************************************************************************************************************
+ ** COLORS
+ ******************************************************************************************************************
+ ******************************************************************************************************************/
+$grey: var(--backgroundcolor);
+$darkgrey: var(--headercolor);
+$lightgrey: var(--fontcolor);
+$white: #FFFFFF;
+$blue: #1C6C90;
+
+/******************************************************************************************************************
+ ******************************************************************************************************************
+ ** SIZES
+ ******************************************************************************************************************
+ ******************************************************************************************************************/
+$window_height: 100vh;
+$window_width: 100vw;
+
+$mobile_max_width: 1000;
+
+$box_margin: 2px;
+$box_border: 1px;
+$box_padding: 3px;
+
+$tab_span: 25px;
+
+$header_height: 50px;
+$footer_height: 50px;
+
+$sidebarright_settings_height: 200px;
+$sidebarright_settings_innerheight: calc(#{$sidebarright_settings_height} - 2 * #{$box_margin} - 2 * #{$box_border});
+$sidebarright_width: 200px;
+$sidebarright_height: calc(#{$window_height} - #{$header_height} - #{$footer_height});
+$sidebarright_element_innerwidth: calc(#{$sidebarright_width} - 2 * #{$box_margin} - 2 * #{$box_border});
+// WHY +6px??
+$sidebarright_element_height: calc((#{$sidebarright_height} - #{$sidebarright_settings_height + 6px}) / 3);
+$sidebarright_element_innerheight: calc(#{$sidebarright_element_height} - 2 * #{$box_margin} - 2 * #{$box_border});
+
+$sidebarleft_server_height: 200px;
+$sidebarleft_server_innerheight: calc(#{$sidebarleft_server_height} - 2 * #{$box_margin} - 2 * #{$box_border});
+$sidebarleft_width: 200px;
+$sidebarleft_height: calc(#{$window_height} - #{$header_height} - #{$footer_height});
+$sidebarleft_innerwidth: calc(#{$sidebarleft_width} - 2 * #{$box_margin} - 2 * #{$box_border});
+$sidebarleft_innerheight: calc(#{$sidebarleft_height} - 2 * #{$box_margin} - 2 * #{$box_border});
+$sidebarleft_algorithms_height: calc(#{$sidebarleft_height} - #{$sidebarleft_server_height} - 4 * #{$box_margin} - 4 * #{$box_border} - 44px);
+$sidebarleft_algorithms_width: 164px;
+
+$console_height: 200px;
+$console_width: calc(#{$window_width} - #{$sidebarleft_width} - #{$sidebarright_width});
+$console_innerwidth: calc(#{$console_width} - 2 * #{$box_margin} - 2 * #{$box_border});
+$console_innerheight: calc(#{$console_height} - 2 * #{$box_margin} - 2 * #{$box_border});
+
+$renderer_height: calc((#{$window_height} - #{$header_height} - #{$footer_height} - #{$console_height}) / 2);
+$renderer_width: calc((#{$window_width} - #{$sidebarleft_width} - #{$sidebarright_width}) / 3);
+$renderer_innerwidth: calc(#{$renderer_width} - 2 * #{$box_margin} - 2 * #{$box_border});
+$renderer_innerheight: calc(#{$renderer_height} - 2 * #{$box_margin} - 2 * #{$box_border});
+
+$rendererout_height: calc(#{$window_height} - #{$header_height} - #{$footer_height} - #{$console_height});
+$rendererout_width: calc((#{$window_width} - #{$sidebarleft_width} - #{$sidebarright_width}) / 3 * 2);
+$rendererout_innerheight: calc(#{$rendererout_height} - 2 * #{$box_margin} - 2 * #{$box_border});
+$rendererout_innerwidth: calc(#{$rendererout_width} - 2 * #{$box_margin} - 2 * #{$box_border});
+
+$body_preview_height: calc(#{$window_height} - #{$header_height} - #{$footer_height} - #{$console_height} - 2 * #{$box_margin} - 2 * #{$box_border});
+$body_preview_width: calc(#{$window_width} - #{$sidebarleft_width} - #{$sidebarright_width} - 2 * #{$box_margin} - 2 * #{$box_border});
+
+/******************************************************************************************************************
+ ******************************************************************************************************************
+ ** Changes the style of scrollbars
+ ******************************************************************************************************************
+ ******************************************************************************************************************/
+::-webkit-scrollbar{ width: 10px; }
+::-webkit-scrollbar-track{  background: $grey; }
+::-webkit-scrollbar-thumb{ background: $lightgrey; }
+::-webkit-scrollbar-thumb:hover{ background: $darkgrey; }
+
+:root {
+    --backgroundcolor: #2B2C34;
+    --headercolor: #1F2124;
+    --fontcolor: #B4B4B8;
+
+    font-size: 13px;
+
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+
+    --mobile-max-width: #{$mobile_max_width};
+    --window-width: #{$window_width};
+}
+
+img { 
+    -webkit-user-drag: none; 
+    -khtml-user-drag: none; 
+    -moz-user-drag: none; 
+    -o-user-drag: none; 
+    user-drag: none; 
+  }
+
+select {
+    background-color: $grey;
+    color: $lightgrey;
+    border: 0px;
+    width: 100%;
+}
+
+input {
+    background-color: $grey;
+    color: $lightgrey;
+    width: calc(100% - 4px);
+}
+
+/* Firefox */
+input[type=number] {
+    border: 0;
+  }
+
+/* Tooltip container */
+.tooltip {
+    position: relative;
+    display: inline-block;
+    z-index: 99999999;
+    border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
+}
+
+/* Tooltip text */
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 120px;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    padding: 5px 0;
+    border-radius: 6px;
+  
+    /* Position the tooltip text */
+    position: absolute;
+    z-index: 99999999;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -60px;
+  
+    /* Fade in tooltip */
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+  
+/* Tooltip arrow */
+.tooltip .tooltiptext::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #555 transparent transparent transparent;
+    z-index: 99999999;
+}
+  
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .tooltiptext {
+    transition-delay:0.5s;
+    visibility: visible;
+    opacity: 1;
+    z-index: 99999999;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+table td {
+    border: 1px solid $lightgrey; 
+    padding: 4px;
+}
+table tr {
+    border: 1px solid $grey; 
+    padding: 4px;
+}
+table tr:first-child td {
+    border-top: 0;
+}
+table tr td:first-child {
+    border-left: 0;
+}
+table tr:last-child td {
+    border-bottom: 0;
+}
+table tr td:last-child {
+    border-right: 0;
+}
+
+table th {
+    border: 1px solid $lightgrey; 
+}
+table tr:first-child th {
+    border-top: 0;
+}
+table tr th:first-child {
+    border-left: 0;
+}
+table tr:last-child th {
+    border-bottom: 0;
+}
+table tr th:last-child {
+    border-right: 0;
+}
+
+

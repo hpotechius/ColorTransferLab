@@ -1,0 +1,53 @@
+@import 'settings/Global.scss';
+
+.gaussianSplatRenderer {
+    position: absolute;
+    display: none;
+    // background-color: green;
+    width: 100%;
+    // top: 25px;
+    height: calc(#{100%});
+    // z-index: 998;
+}
+
+.gaussiansplat {
+    position: absolute;
+    display: display;
+    width: 100%;
+    height: calc(#{100%} - 25px);
+    // z-index: 999;
+}
+
+.gs_button_settings{
+    position: absolute;
+    width: 15px;
+    padding: 5px;
+    height: 15px;
+    z-index: 999;
+    right: 0px;
+    top: -25px;
+}
+
+.gs_field_settings{
+    background-color: $darkgrey;
+    opacity: 0.9;
+    position: absolute;
+    bottom: 0px;
+    width: 100%;
+    //padding: 5px;
+    //height: 100%;
+    z-index: 99999;
+}
+
+.gs_button_settings_texture_icon{
+    height: 100%;
+}
+
+.gs_button_settings_texture_icon:hover{
+    filter: brightness(1.5);
+}
+
+.gs_field_settings_table_cell{
+    width: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.106);
+}

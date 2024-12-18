@@ -1,0 +1,21 @@
+.loading-view{
+    position: absolute;
+    justify-content: center;
+    background-color: black;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+    display: none;
+    // z-index: 9999;
+}
+
+.loading-view-icon{
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    object-fit: contain;
+    background-color: black;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+}
