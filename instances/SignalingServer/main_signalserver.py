@@ -23,34 +23,7 @@ SS_SID = None
 sql_conn = None
 CONN = None
 
-ce_servers = {
-    "ce1": {
-        "name": "Compute Engine 1",
-        "id": "123456",
-        "status": "Idle",
-    },
-    "ce2": {
-        "name": "Compute Engine 2",
-        "id": "1234567",
-        "status": "Busy",
-    },
-    "ce3": {
-        "name": "Compute Engine 3",
-        "id": "1234567",
-        "status": "Busy",
-    },
-    "ce4": {
-        "name": "Compute Engine 4",
-        "id": "1234567",
-        "status": "Busy",
-    },
-    "ce5": {
-        "name": "Compute Engine 5",
-        "id": "1234567",
-        "status": "Busy",
-    }
-}
-db_servers = {}
+ce_instances = {}
 
 # Example:
 # name:            Name of the client: Always has the format Client-<4 digit ID>
@@ -91,7 +64,7 @@ RESET = '\033[0m'
 # ------------------------------------------------------------------------------------------------------------------
 @app.route("/")
 def index():
-    return render_template("index.html", clients={**clients, **db_servers})
+    return render_template("index.html", clients={**clients, **ce_instances})
 
 # ------------------------------------------------------------------------------------------------------------------
 # Will be executed when a client connects to the server
@@ -120,23 +93,23 @@ def on_disconnect():
 
     
 
-    for client_id, client_data in list(db_servers.items()):
+    for client_id, client_data in list(ce_instances.items()):
         sid = client_data["sid"]
         if sid == request.sid:
             print(f"{ORANGE}[INFO] Remove Database Server {client_id}{RESET}")
             removed_db_server = True
-            del db_servers[client_id]
+            del ce_instances[client_id]
             break
 
     if removed_db_server:
         print(f"{GREEN}[SEND] Send updated Database List to all Clients{RESET}")
         for client_id, client_data in list(clients.items()):
             sid = client_data["sid"]
-            emit("db_request", db_servers, to=sid)
+            emit("db_request", ce_instances, to=sid)
     
     #print(request.sid)
     #print(clients)
-    socketio.emit('update_clients', {**clients, **db_servers})
+    socketio.emit('update_clients', {**clients, **ce_instances})
 
 # ------------------------------------------------------------------------------------------------------------------
 # 
@@ -157,7 +130,7 @@ def on_message(data):
         print(f'{ORANGE}[INFO] Message for Signal Server: {data.get("message")}{RESET}')
         # Client requests list of database servers
         if data.get("message") == "/database":
-            emit("db_request", db_servers, to=request.sid)
+            emit("db_request", ce_instances, to=request.sid)
         # Database server sends status update
         elif data.get("message") == "feedback":
             print(f'{GREEN}[SEND] Send Feedback with title: {data.get("data")["category"]}{RESET}')
@@ -176,8 +149,8 @@ def on_message(data):
             print("Updating status")
             print(f'{ORANGE}[INFO] Updating Client and Database Server{RESET}')
             # Update Client information in Database Server Information
-            db_servers[data.get("from")]["status"] = data.get("data")["status"]
-            db_servers[data.get("from")]["connected_cl"] = data.get("data")["connected_cl"]
+            ce_instances[data.get("from")]["status"] = data.get("data")["status"]
+            ce_instances[data.get("from")]["connected_cl"] = data.get("data")["connected_cl"]
             # Update Database Server information in Client Information
 
             # if the database is disconnected from the client, no need to update the client
@@ -186,27 +159,27 @@ def on_message(data):
                 clients[data.get("data")["connected_cl"]]["status"] = "Connected"
 
 
-            socketio.emit('update_clients', {**clients, **db_servers})
+            socketio.emit('update_clients', {**clients, **ce_instances})
             # Upate status of database server and send to all clients
             print(f"{GREEN}[SEND] Send updated Database List to all Clients{RESET}")
             for client_id, client_data in list(clients.items()):
                 sid = client_data["sid"]
-                emit("db_request", db_servers, to=sid)
+                emit("db_request", ce_instances, to=sid)
             #print(data.get("from"))
         else:
             print("Unknown server", data.get("message"))
         return
 
     # Check if message is for the database server
-    if target_id in db_servers:
+    if target_id in ce_instances:
         print(f"{ORANGE}[SEND] Forwarding message to Database Server {target_id}{RESET}")
 
         # check privacy setting of compute node. If privacy is enabled, only forward messages from the same IP
-        if db_servers[target_id]["privacy"] and db_servers[target_id]["ip_address"] != request.remote_addr:
+        if ce_instances[target_id]["privacy"] and ce_instances[target_id]["ip_address"] != request.remote_addr:
             print(f"{ORANGE}[INFO] Privacy enabled. Message not forwarded{RESET}")
             return
 
-        sid = db_servers[target_id]["sid"]
+        sid = ce_instances[target_id]["sid"]
         emit("message", data, to=sid)
     # Check if message is for a client
     elif target_id in clients:
@@ -269,13 +242,13 @@ def on_register(data):
     elif data["type"] == "Database":
         # Save new database server
         print(f"{ORANGE}[INFO] Register Compute Node {client_id}{RESET}")
-        db_servers[client_id] = new_dict
-        db_servers[client_id]["privacy"] = data["privacy"]
+        ce_instances[client_id] = new_dict
+        ce_instances[client_id]["privacy"] = data["privacy"]
 
         print(f"{GREEN}[SEND] Send updated Database List to all Clients{RESET}")
         for client_id, client_data in list(clients.items()):
             sid = client_data["sid"]
-            emit("db_request", db_servers, to=sid)
+            emit("db_request", ce_instances, to=sid)
 
     
     # Send Ip Address to Compute Node to same Compute Node 
@@ -284,7 +257,7 @@ def on_register(data):
 
     emit("sid", SS_SID, to=SS_SID)
 
-    socketio.emit('update_clients', {**clients, **db_servers})
+    socketio.emit('update_clients', {**clients, **ce_instances})
         
 # ------------------------------------------------------------------------------------------------------------------
 # Funktion, die beim Empfang des SIGINT-Signals ausgeführt wird

@@ -4,13 +4,11 @@ instances/WebServer/package-lock.json
 instances/WebServer/public/data/
 instances/WebServer/public/previews/
 
-instances/DatabaseServer/data/
-instances/DatabaseServer/previews/
-instances/DatabaseServer/files/data/
-instances/DatabaseServer/files/previews/
-instances/DatabaseServer/Models/
-
-instances/server_1/ColorTransferLab
+instances/ComputeNode/data/
+instances/ComputeNode/previews/
+instances/ComputeNode/files/data/
+instances/ComputeNode/files/previews/
+instances/ComputeNode/Models/
 
 ressources/security/ca_bundle.crt
 ressources/security/certificate.crt
