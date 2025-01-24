@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Connected Clients</title>
+        <title>ColorTransferLabV2 - Signaling Server</title>
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
         <!-- <link rel="stylesheet" type="text/css" href="styles.css"> -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
@@ -16,13 +16,12 @@
                         var client = clients[cid];
                         var connected_cl = client.connected_cl
                         var connected_db = client.connected_db
-                        var connected_ce = client.connected_ce
                         var row = document.createElement('tr');
                         var id_out = "";
                         if(client.type === "Client") {
-                            id_out = "<b>Client: " + cid + "</b><br>Database: " + connected_db;
-                        } else if (client.type === "Database") {
-                            id_out = "Client: " + connected_cl + "<br><b>Database: " + cid + "</b>";
+                            id_out = "<b>Client: " + cid + "</b><br>ComputeNode: " + connected_db;
+                        } else if (client.type === "ComputeNode") {
+                            id_out = "Client: " + connected_cl + "<br><b>ComputeNode: " + cid + "</b>";
                         } else {
                             id_out = cid;
                         }
@@ -42,8 +41,8 @@
         </script>
     </head>
     <body>
-        <h1>Connected Instances</h1>
-        <p><b>WebRTC Signaling Server</b>: https://relay.potechius.com</p>
+        <h1>ColorTransferLabV2 - Signaling Server</h1>
+        <p><b>WebRTC Signaling Server</b>: https://signal.potechius.com</p>
         <table id="clientsTable">
             <thead>
                 <tr>
@@ -66,9 +65,9 @@
                             var typeC = "{{ client.type }}";
                             var out = ""
                             if(typeC === "Client") {
-                                out = "<b>Client: {{ cid }}</b><br>Database: {{ client.connected_db }}";
-                            } else if (typeC === "Database") {
-                                out = "Client: {{ client.connected_cl }}<br><b>Database: {{ cid }}</b>";
+                                out = "<b>Client: {{ cid }}</b><br>ComputeNode: {{ client.connected_db }}";
+                            } else if (typeC === "ComputeNode") {
+                                out = "Client: {{ client.connected_cl }}<br><b>ComputeNode: {{ cid }}</b>";
                             } else {
                                 out = "{{ cid }}";
                             }

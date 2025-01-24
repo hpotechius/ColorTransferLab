@@ -1,5 +1,5 @@
 /*
-Copyright 2024 by Herbert Potechius,
+Copyright 2025 by Herbert Potechius,
 Technical University of Berlin
 Faculty IV - Electrical Engineering and Computer Science - Institute of Telecommunication Systems - Communication Systems Group
 All rights reserved.
@@ -8,6 +8,7 @@ Please see the LICENSE file that should have been included as part of this packa
 */
 
 import React, {useState, useEffect, useRef} from "react";
+
 import './Settings.scss';
 
 
@@ -63,48 +64,30 @@ function Settings(props) {
      **************************************************************************************************************
      **************************************************************************************************************/
     return (
-    <div id="settings_main" style={componentStyle}>
-        <div id="settings_header">
-        <img id='settings_header_logo' src={icon_settings} alt=""/>
-        <div id='settings_header_name'>{sidebar_settings}</div>
+        <div id="settings_main" style={componentStyle}>
+            <div id="settings_header">
+            <img id='settings_header_logo' src={icon_settings} alt=""/>
+            <div id='settings_header_name'>{sidebar_settings}</div>
+            </div>
+            <div id="settings_body">
+            <table style={{width:"100%"}}>
+                <tbody>
+                    <tr>
+                        <td className="settings_table_cell">Single View</td>
+                        <td>
+                            <input 
+                                id="settings_singleview" 
+                                type="checkbox"
+                                onChange={(e) => {
+                                    props.setSingleView(e.target.checked);
+                                }}
+                            />
+                        </td>
+                    </tr> 
+                </tbody>
+            </table>
+            </div>
         </div>
-        <div id="settings_body">
-        <table style={{width:"100%"}}>
-            <tbody>
-            <tr>
-                <td className="settings_table_cell">Single View</td>
-                <td>
-                    <input 
-                        id="settings_singleview" 
-                        type="checkbox"
-                        onChange={(e) => {
-                            props.setSingleView(e.target.checked);
-                            console.log("Single View: " + e.target.checked);
-                            //window.dispatchEvent(new Event('resize'));
-                        }}
-                    />
-                </td>
-            </tr> 
-            {/* <tr>
-                <td>RGB Color Space</td>
-                <td><input id="settings_rgbcolorspace" type="checkbox" /></td>
-            </tr>
-            <tr>
-                <td>3D RGB Color Histogram</td>
-                <td><input id="settings_3dcolorhistogram" type="checkbox" /></td>
-            </tr> */}
-            {/* <tr>
-                <td>Voxel Grid</td>
-                <td><input id="settings_voxelgrid" type="checkbox" /></td>
-            </tr>
-            <tr>
-                <td title={"The objects have to be loaded manually again for showing the new voxel level."}>Voxel Level</td>
-                <td><input id="settings_voxellevel" type="range" min="1" max="3" defaultValue="1" style={{width: "75px"}}/></td>
-            </tr> */}
-            </tbody>
-        </table>
-        </div>
-    </div>
     );
 }
 

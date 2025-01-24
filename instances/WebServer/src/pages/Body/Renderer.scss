@@ -1,13 +1,14 @@
 /*
-Copyright 2022 by Herbert Potechius,
-Ernst-Abbe-Hochschule Jena - University of Applied Sciences - Department of Electrical Engineering and Information
-Technology - Immersive Media and AR/VR Research Group.
+Copyright 2025 by Herbert Potechius,
+Technical University of Berlin
+Faculty IV - Electrical Engineering and Computer Science - Institute of Telecommunication Systems - Communication Systems Group
 All rights reserved.
 This file is released under the "MIT License Agreement".
 Please see the LICENSE file that should have been included as part of this package.
 */
 
 @import 'settings/Global.scss';
+
 
 .renderer_container{
     position: relative;
@@ -34,13 +35,11 @@ Please see the LICENSE file that should have been included as part of this packa
     padding: 25px;
     margin: 25px;
     background-color: $grey;
-    // z-index: 9999;
     border: 1px dashed $lightgrey;
     border-radius: 15px;
 }
 
 .renderer_title{
-    // $padding: 3px;
     padding: $box_padding;
     height: 19px;
     position: absolute;
@@ -66,11 +65,11 @@ Please see the LICENSE file that should have been included as part of this packa
     font-size: 12pt;
 }
 
-.uploadButton:hover{
+.uploadButton:hover,
+.renderer_mesh_texture_button:hover,
+.renderer_info_button:hover{
     filter: brightness(1.5);
 }
-
-
 
 #renderer_src {
     background-color: $grey;
@@ -78,7 +77,6 @@ Please see the LICENSE file that should have been included as part of this packa
 
 #renderer_ref {
     background-color: blue; // not Working
-    //position: absolute;
 }
 
 
@@ -88,18 +86,11 @@ Please see the LICENSE file that should have been included as part of this packa
 
 .renderer_mesh_texture_button {
     position: absolute;
-    // background-color: blue;
     width: 15px;
     padding: 5px;
     height: 15px;
     z-index: 9998;
     right: 0px;
-    // pointer-events:none;
-    // filter: grayscale(100%); 
-}
-
-.renderer_mesh_texture_button:hover {
-    filter: brightness(1.5);
 }
 
 .renderer_mesh_texture_icon {
@@ -108,18 +99,11 @@ Please see the LICENSE file that should have been included as part of this packa
 
 .renderer_info_button {
     position: absolute;
-    // background-color: blue;
     width: 15px;
     padding: 5px;
     height: 15px;
     z-index: 9998;
     right: 25px;
-    // pointer-events:none;
-    // filter: grayscale(100%); 
-}
-
-.renderer_info_button:hover {
-    filter: brightness(1.5);
 }
 
 .renderer_info_icon {

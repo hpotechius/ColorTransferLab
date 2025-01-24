@@ -8,6 +8,7 @@ from os import path
 import func_timeout
 import socketio
 from PIL import Image as PILImage
+import sys
 
 from ColorTransferLib.ColorTransfer import ColorTransfer, ColorTransferEvaluation
 from ColorTransferLib.MeshProcessing.Mesh import Mesh
@@ -41,6 +42,7 @@ class WebRTCClient:
         self.message = "X"
         self.reset_peer_connection()
         self.chunk_size = 1048576 # 1MB 
+        #self.chunk_size = 16000 # 16KB 
 
         self.connected_cl = ""
 
@@ -84,7 +86,7 @@ class WebRTCClient:
         await self.sio.emit("register", 
                        {
                             "name": self.compute_node_name,
-                            "type": "Database",
+                            "type": "ComputeNode",
                             "client_id": self.client_id,
                             "country": country,
                             "privacy": self.compute_node_privacy
@@ -142,7 +144,7 @@ class WebRTCClient:
                 await self.sio.emit("register", 
                     {
                         "name": self.compute_node_name,
-                        "type": "Database",
+                        "type": "ComputeNode",
                         "client_id": self.client_id,
                         "country": country,
                         "privacy": self.compute_node_privacy
@@ -163,7 +165,12 @@ class WebRTCClient:
     # ------------------------------------------------------------------------------------------------------------------
     async def create_offer(self, target):
         print("Creating offer...")
-        self.channel = self.pc.createDataChannel("chat", {"reliable": True})
+        self.channel = self.pc.createDataChannel("chat", 
+                                                {
+                                                    "reliable": True,
+                                                    # "ordered": True,  # Ensure messages are delivered in order
+                                                    # "maxRetransmits": -1  # Unlimited retransmissions for reliability
+            })
         self.channel.on("open", self.on_channel_open)
         self.channel.on("message", lambda message: asyncio.create_task(self.on_message(message)))
 
@@ -342,7 +349,7 @@ class WebRTCClient:
     # 
     # ------------------------------------------------------------------------------------------------------------------
     async def sendVolumetricVideoFiles(self, data_recv):
-        print(data_recv)
+        #print(data_recv)
         filepath_wo_volu = data_recv.split(".")[0]
         jsonpath = path.join("data", filepath_wo_volu + ".json")
 
@@ -713,12 +720,25 @@ class WebRTCClient:
             if command_recv == "dbStructure":
                 db_structure = Utils.get_database_structure()
 
+                # # Größe des Objekts selbst
+                # size_in_bytes = sys.getsizeof(db_structure)
+                # print(f"Größe von db_structure (Objekt selbst): {size_in_bytes} Bytes")
+
+                # # Größe des serialisierten Objekts
+                # serialized_db_structure = json.dumps(db_structure)
+                # size_in_bytes_serialized = sys.getsizeof(serialized_db_structure)
+                # print(f"Größe von db_structure (serialisiert): {size_in_bytes_serialized} Bytes")
+
+                test = [{'name': 'root', 'folders': [{'name': 'PointClouds', 'folders': [], 'files': ['Orange.ply',]}]}]
+
                 Utils.printRECV(f"Client requests database structure via command: dbStructure.", self.window)
                 Utils.printSEND(f"Sending database structure.", self.window)
+
                 self.send_datachannel_message(str({
                     "message": "dbStructure",
                     "data" : db_structure
                 }))
+
                 return
 
             elif command_recv == "/upload_start":
@@ -816,7 +836,7 @@ class WebRTCClient:
 
             elif command_recv == "/color_transfer":
                 Utils.printRECV(f"Client requests color transfer via: {command_recv}.", self.window)
-                print(data_recv)
+                #print(data_recv)
                 await self.handlerColorTransfer(data_recv)
                 # asyncio.create_task(self.handlerColorTransfer(data_recv))
 
@@ -837,9 +857,9 @@ class WebRTCClient:
     # ------------------------------------------------------------------------------------------------------------------
     def send_datachannel_message(self, message):
         if self.channel and self.channel.readyState == "open":
+            print("Sending message")
             #print(f"Sending message: {message}")
             self.channel.send(message)
-
         else:
             print("DataChannel is not open yet.")
 

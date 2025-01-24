@@ -1,6 +1,7 @@
 /*
-Copyright 2024 by Herbert Potechius,
-Tehnical University of Berlin, Faculty IV - Electrical Engineering and Computer Science
+Copyright 2025 by Herbert Potechius,
+Technical University of Berlin
+Faculty IV - Electrical Engineering and Computer Science - Institute of Telecommunication Systems - Communication Systems Group
 All rights reserved.
 This file is released under the "MIT License Agreement".
 Please see the LICENSE file that should have been included as part of this package.
@@ -14,80 +15,82 @@ Reduce video size:
 
 import React, {Suspense, useState, useEffect, useRef, useMemo} from 'react';
 import {OrbitControls, PerspectiveCamera, OrthographicCamera} from "@react-three/drei"
+import $ from 'jquery';
+import * as THREE from 'three';
 import {Canvas} from "@react-three/fiber";
+
 import Axes from "rendering/Axes"
 import './LightFieldRenderer.scss';
 import LightFieldPlane from 'rendering/LightFieldPlane';
-import $ from 'jquery';
-import * as THREE from 'three';
 import RendererButton from './RendererButton';
 import PointShader from 'shader/PointShader.js';
-import { use } from 'react';
-import { updateHistogram, calculateColorHistograms, calculateMeanAndStdDev } from 'Utils/Utils';
-import {BufferAttribute} from 'three';
 import InfoField from './InfoField';
+import SettingsField from './SettingsField';
+import SettingsFieldItem from './SettingsFieldItem';
 
 /******************************************************************************************************************
  ******************************************************************************************************************
  ** FUNCTIONAL COMPONENT
+ **
+ ** Light field renderer for displaying light field videos in mp4 format.
  ******************************************************************************************************************
  ******************************************************************************************************************/
 const LightFieldRenderer = (props) => {    
-    const [isFieldSettingVisible, setIsFieldSettingVisible] = useState(true);
+    /**************************************************************************************************************
+     **************************************************************************************************************
+     ** STATES & REFERENCES & VARIABLES
+     **************************************************************************************************************
+     **************************************************************************************************************/
+    const [isFieldSettingVisible, setIsFieldSettingVisible] = useState(false);
     const [focus, setFocus] = useState(0.0);
     const [aperture, setAperture] = useState(5.0);
     const [stInput, setStInput] = useState(false);
-
     const [isFieldInfoVisible, setIsFieldInfoVisible] = useState(false);
-
     const [info, setInfo] = useState({});
-
-    const refPoints = useRef(null);
-
     const [grid, changeGrid] = useState(<gridHelper args={[20,20, 0x222222, 0x222222]}/>)
     const [axis, changeAxis] = useState(<Axes />)
     const [camera, setCamera] = useState(null);
     const [perspectiveView, setPerspectiveView] = useState(true)
-
     const [update, setUpdate] = useState(0);
     const [fieldTexture, setFieldTexture] = useState(null);
+    const [isWaiting, setIsWaiting] = useState(false);
 
-    const pixelBuffer = useRef(null);
-
-    const [cameraMoved, setCameraMoved] = useState(false);
+    const refPoints = useRef(null);
+    // const pixelBuffer = useRef(null);
     const controlsRef = useRef();
     const cameraRef = useRef();
-
-    const pixelData = useRef(null);
-
     const isImageVisible = useRef(true);
     const isCanvasVisible = useRef(false);
     const isHistoVisible = useRef(false);
     const isDistVisible = useRef(false);
+    const planeRef = useRef();
 
     const camsX = 17;
     const camsY = 17;
     const width = useRef(1.0);
     const height = useRef(1.0);
-    // const cameraGap = 0.08;
     const cameraGap = 0.1;
-    // let lightfield_cameraview = useRef(<PerspectiveCamera 
-    //                                 position={[0, 0, 1.5]} 
-    //                                 fov={45}
-    //                                 makeDefault />)
 
     const vertexPointShader = PointShader.vertexShader
     const fragmentPointShader = PointShader.fragmentShader
     
     const button_settings_texture_icon = "assets/icons/icon_settings_grey.png";
 
+    /**************************************************************************************************************
+     **************************************************************************************************************
+     ** HOOKS
+     **************************************************************************************************************
+     **************************************************************************************************************/
+
+    /**************************************************************************************************************
+     * 
+     **************************************************************************************************************/
     useEffect(() => {
         const loadVideo = async (data) => {
             const camsX = data.grid_width;
             const camsY = data.grid_height;
             const resX = data.img_width;
             const resY = data.img_height;
-            // const resY = data.img_width;
             width.current = resX;
             height.current = resY;
             extractVideo(props.filePath[1], resX, resY, camsX, camsY, setFieldTexture, props.renderBarID, props.setComplete);
@@ -100,12 +103,9 @@ const LightFieldRenderer = (props) => {
             })
         };
         
-
         if (props.filePath !== null) {
             // read JSON file with lightfield meta data
-            //const json_path = props.filePath.split(".")[0] + ".json";
             const json_path = props.filePath[0];
-            console.log(json_path)
 
             const loadJson = async () => {
                 try {
@@ -124,37 +124,8 @@ const LightFieldRenderer = (props) => {
 
     }, [props.filePath]);
 
-    // useEffect(() => {
-    //     console.log(isCanvasVisible.current)
-    //     if (isCanvasVisible.current) {
-    //         const { mean, stdDev } = calculateMeanAndStdDev(pixelBuffer.current, false, 4);
-    //         // set the histogram data for 2D and 3D rendering
-    //         const histograms = calculateColorHistograms(pixelBuffer.current, false, 4);
-
-    //         let colors_buf = new Float32Array(pixelBuffer.current)
-    //         // Entfernen jedes vierten Wertes aus colors_buf und Teilen der verbleibenden Werte durch 255
-    //         const filteredColorsBuf = colors_buf
-    //             .filter((_, index) => (index + 1) % 4 !== 0)
-    //             .map(value => value / 255);
-
-    //         // setState(prevState => ({
-    //         //     ...prevState,
-    //         //     histogram3D: histograms[1],
-    //         //     colordistribution: new BufferAttribute(new Float32Array(filteredColorsBuf), 3),
-    //         //     info: {
-    //         //         width: 0,
-    //         //         height: 0,
-    //         //         channels: 0
-    //         //     }
-    //         // }));
-
-    //         // histogram3D.current = histograms[1]
-    //         updateHistogram(histograms[0], mean, stdDev, props.view)
-    //     }
-    // }, [isCanvasVisible.current]);
-
     /**************************************************************************************************************
-     * 
+     * Shader-Data
      **************************************************************************************************************/
     let data = useMemo(
         () => ({
@@ -178,7 +149,7 @@ const LightFieldRenderer = (props) => {
     )
 
     /**************************************************************************************************************
-     * 
+     * Switch between perspective and orthographic view
      **************************************************************************************************************/
     useEffect(() => {
         if (perspectiveView) {
@@ -188,53 +159,70 @@ const LightFieldRenderer = (props) => {
         }
     }, [perspectiveView]);
 
+
     /**************************************************************************************************************
-     * 
+     **************************************************************************************************************
+     ** FUNCTIONS
+     **************************************************************************************************************
      **************************************************************************************************************/
-    const [isWaiting, setIsWaiting] = useState(false);
 
+    /**************************************************************************************************************
+     * If the camera orientation changes, the color data of the light field renderer has to be updated.
+     * To reduce the number of updates, the update is triggered with a delay of 1 second.
+     **************************************************************************************************************/
     const handleCameraChange = () => {
-        // setCameraMoved(true);
-
         if (controlsRef.current) {
-            // controlsRef.current.update();
-            // Trigger the color data update with a delay
             if (planeRef.current && !isWaiting) {
                 setIsWaiting(true);
                 setTimeout(() => {
-                    console.log("Camera moved");
                     planeRef.current.captureShaderOutput();
                     setIsWaiting(false);
-                }, 1000); // 5 Sekunden Verzögerung
+                }, 1000);
             }
         }
     };
 
-    const planeRef = useRef();
-
-
+    /**************************************************************************************************************
+     * Show the settings for the light field renderer
+     * (1) Focus
+     * (2) Aperture
+     * (3) Show ST Plane
+     **************************************************************************************************************/
     const showSettings = () => {
         setIsFieldSettingVisible(!isFieldSettingVisible);
     };
 
+    /**************************************************************************************************************
+     * Updates the focus value of the light field renderer.
+     * Focus is in the range of -0.01 to 0.01.
+     **************************************************************************************************************/
     const handleFocusChange = (e) => {
-        // focus is in the range of -0.01 to 0.01
         setFocus(e.target.value / 10000.0);
     }
 
+    /**************************************************************************************************************
+     * Updates the aperture value of the light field renderer
+     * Aperture is in the range of 1.0 to 10.0.
+     **************************************************************************************************************/
     const handleApertureChange = (e) => {
-        // aperture is in the range of 1.0 to 10.0
         setAperture(e.target.value / 10.0);
     }
 
+    /**************************************************************************************************************
+     * Visualize the camera positions of the individual cameras in the light field.
+     **************************************************************************************************************/
     const handlePlaneChange = (e) => {
         setStInput(!stInput);
     }
 
+    /**************************************************************************************************************
+     * The Light Field is stored as a video in mp4 format. The video is extracted and the frames are stored in a
+     * texture. The texture is used for rendering the light field.
+     **************************************************************************************************************/
     const extractVideo = (filename, resX, resY, camsX, camsY, setFieldTexture, renderBarID, setComplete) => {
         const video = document.createElement('video');
         const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
         canvas.width = resX;
         canvas.height = resY;
@@ -270,8 +258,7 @@ const LightFieldRenderer = (props) => {
             }
 
             const fieldTexture = new THREE.DataArrayTexture(allBuffer, resX, resY, camsX * camsY);
-            console.log('Loaded field data');
-        
+
             fieldTexture.needsUpdate = true;
             setFieldTexture(fieldTexture);
         };
@@ -282,13 +269,11 @@ const LightFieldRenderer = (props) => {
       
         video.addEventListener('loadeddata', async () => {
             await fetchFrames();
-            console.log('loaded data');
+            console.debug("%c[INFO] LightField loaded", "color: orange;")
         
             setComplete(Math.random());
             const renderbarprocessingid = renderBarID + "_processing"
-            const renderbartextid = renderBarID + "_text"
             $(`#${renderbarprocessingid}`).css("width", "0%")
-            // $(`#${renderbartextid}`).html("PFUI")
             $(`#${renderBarID}`).css("display", "none")
         });
       
@@ -296,12 +281,15 @@ const LightFieldRenderer = (props) => {
         video.src = filename;
     }
 
-    const handleColorDataReady = (pixelData) => {
-        pixelBuffer.current = pixelData;
-    };
+    /**************************************************************************************************************
+     *
+     **************************************************************************************************************/
+    // const handleColorDataReady = (pixelData) => {
+    //     pixelBuffer.current = pixelData;
+    // };
 
     /**************************************************************************************************************
-     * 
+     * Switch between Light Field view and Color Distribution view
      **************************************************************************************************************/
     const switchColorDistribution = () => {
         isDistVisible.current = !isDistVisible.current;
@@ -316,7 +304,7 @@ const LightFieldRenderer = (props) => {
     }
 
     /**************************************************************************************************************
-     * 
+     * Switch between Light Field view and 3D Color Histogram view
      **************************************************************************************************************/
     const switchColorHistogram = () => {
         isHistoVisible.current = !isHistoVisible.current;
@@ -331,11 +319,14 @@ const LightFieldRenderer = (props) => {
         setUpdate(Math.random())
     }
     /**************************************************************************************************************
-     * 
+     * Show object information
+     * (1) Width
+     * (2) Height
+     * (3) Number of cameras in x
+     * (4) Number of cameras in y
      **************************************************************************************************************/
     const showObjectInfo = (e) => {
         setIsFieldInfoVisible(!isFieldInfoVisible);
-        // setInfo(imageRef.current.getState().info)
     }
 
     /**************************************************************************************************************
@@ -355,10 +346,7 @@ const LightFieldRenderer = (props) => {
                 <RendererButton onClick={switchColorHistogram} src={"assets/icons/icon_histogram_grey.png"}/>
                 {/* Button for switching between mesh view and the color dostribution view */}
                 <RendererButton onClick={switchColorDistribution} src={"assets/icons/icon_dist_grey.png"}/>
-                {/* Button for showing the deafault view */}
-                {/* <RendererButton onClick={switchDefault} src={"assets/icons/icon_x.png"}/> */}
             </div>
-
 
             <Canvas
                 style={{
@@ -378,7 +366,6 @@ const LightFieldRenderer = (props) => {
                     aperture={aperture}
                     focus={focus}
                     stInput={stInput}    
-                    onColorDataReady={handleColorDataReady}
                     cameraRef={cameraRef}
                     view={props.view}
                 />
@@ -434,47 +421,11 @@ const LightFieldRenderer = (props) => {
             </InfoField>
 
             {/* Settings field */}
-            <div className="lfr_field_settings" style={{ display: isFieldSettingVisible ? 'none' : 'block' }}>
-                <table style={{width:"100%"}}>
-                    <tbody>
-                        <tr>
-                            <td className='lfr_field_settings_table_cell'>Focus</td>
-                            <td className='lfr_field_settings_table_cell'>
-                                <input 
-                                    type="range" 
-                                    min="-100" 
-                                    max="100" 
-                                    defaultValue="0" 
-                                    onChange={handleFocusChange} 
-                                    style={{width: "100%"}}
-                                />
-                            </td>
-                        </tr>
-                        <tr>
-                            <td className='lfr_field_settings_table_cell'>Aperture</td>
-                            <td className='lfr_field_settings_table_cell'>
-                                <input 
-                                    type="range" 
-                                    min="0" 
-                                    max="100" 
-                                    defaultValue="50" 
-                                    onChange={handleApertureChange} 
-                                    style={{width: "100%"}}/>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td className='lfr_field_settings_table_cell'>Show ST Plane</td>
-                            <td className='lfr_field_settings_table_cell'>
-                                <input 
-                                    type="checkbox"
-                                    defaultChecked={false}
-                                    onChange={handlePlaneChange} 
-                                />
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+            <SettingsField visibility={isFieldSettingVisible}>
+                <SettingsFieldItem type={"range"} min="-100" max="100" value={focus * 10000.0} onChange={handleFocusChange}>Focus</SettingsFieldItem>
+                <SettingsFieldItem type={"range"} min="0" max="100" value={aperture * 10.0} onChange={handleApertureChange}>Aperture</SettingsFieldItem>
+                <SettingsFieldItem type={"checkbox"} default={stInput} onChange={handlePlaneChange}>Show ST Plane</SettingsFieldItem>
+            </SettingsField>
         </div>
     )
 };

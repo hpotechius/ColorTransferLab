@@ -1,7 +1,7 @@
 /*
-Copyright 2022 by Herbert Potechius,
-Ernst-Abbe-Hochschule Jena - University of Applied Sciences - Department of Electrical Engineering and Information
-Technology - Immersive Media and AR/VR Research Group.
+Copyright 2025 by Herbert Potechius,
+Technical University of Berlin
+Faculty IV - Electrical Engineering and Computer Science - Institute of Telecommunication Systems - Communication Systems Group
 All rights reserved.
 This file is released under the "MIT License Agreement".
 Please see the LICENSE file that should have been included as part of this package.
@@ -10,20 +10,45 @@ Please see the LICENSE file that should have been included as part of this packa
 import React, {Suspense, useState, useEffect, useRef} from 'react';
 import {Canvas} from "@react-three/fiber";
 import $ from 'jquery';
-import {updateHistogram, calculateColorHistograms, calculateMeanAndStdDev,loadTextureAndConvertToArray} from 'Utils/Utils';
 
+import {updateHistogram} from 'Utils/Utils';
+
+
+/******************************************************************************************************************
+ ******************************************************************************************************************
+ ** FUNCTIONAL COMPONENT
+ ** 
+ ** CustomCanvas for rendering 3D objects in a canvas.
+ ******************************************************************************************************************
+ ******************************************************************************************************************/
 function CustomCanvas(props) {    
+    /**************************************************************************************************************
+     **************************************************************************************************************
+     ** STATES & REFERENCES & VARIABLES
+     **************************************************************************************************************
+     **************************************************************************************************************/
     const [currentIndex, setCurrentIndex] = useState(0);
-    const meshRefs = useRef([]);
     const [info, setInfo] = useState(null);
+    const meshRefs = useRef([]);
 
+    /**************************************************************************************************************
+     **************************************************************************************************************
+     ** HOOKS
+     **************************************************************************************************************
+     **************************************************************************************************************/
+
+    /**************************************************************************************************************
+     * 
+     **************************************************************************************************************/
     useEffect(() => {
         if (info !== null) {
             props.setInfo(info);
         }
     }, [info, props]);
 
-
+    /**************************************************************************************************************
+     * 
+     **************************************************************************************************************/
     useEffect(() => {
         if (Array.isArray(props.rendering)) {
             const interval = setInterval(() => {
@@ -50,15 +75,12 @@ function CustomCanvas(props) {
                             }
                         }
 
-
-
                         $("#" + props.textureMapID).attr("src", props.activeTextureMap[newIndex]);
                         $("#voluCounterID").html("Frame: " + newIndex + " / " + (nu - 1));
 
-                        // console.log("CustomCanvas useEffect currentIndex: " + newIndex)
                         props.currentIndex.current = newIndex;
                         if(props.refs[newIndex].current !== null) {
-                            console.log("CustomCanvas useEffect currentIndex: " + newIndex)
+                            // console.log("CustomCanvas useEffect currentIndex: " + newIndex)
                             const histo = props.refs[newIndex].current.getState().histogram2D;
                             const view = props.refs[newIndex].current.getState().view;
                             const mean = props.refs[newIndex].current.getState().mean;
@@ -77,6 +99,11 @@ function CustomCanvas(props) {
         }
     }, [props.fps]);
 
+    /**************************************************************************************************************
+     **************************************************************************************************************
+     ** RENDERING
+     **************************************************************************************************************
+     **************************************************************************************************************/
     return (
         <Canvas id={props.id} className={props.className} style={{"height": "calc(100% - 25px)"}}>
             {props.children}

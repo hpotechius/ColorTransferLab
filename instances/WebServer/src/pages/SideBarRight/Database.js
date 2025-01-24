@@ -1,5 +1,5 @@
 /*
-Copyright 2024 by Herbert Potechius,
+Copyright 2025 by Herbert Potechius,
 Technical University of Berlin
 Faculty IV - Electrical Engineering and Computer Science - Institute of Telecommunication Systems - Communication Systems Group
 All rights reserved.
@@ -7,16 +7,19 @@ This file is released under the "MIT License Agreement".
 Please see the LICENSE file that should have been included as part of this package.
 */
 
-import React from 'react';
-import {useState, useEffect} from "react";
-import './Database.scss';
+import React, {useState, useEffect} from "react";
 import $ from 'jquery';
-import {consolePrint} from 'Utils/Utils'
-import {server_request} from 'Utils/Connection'
+
+import './Database.scss';
 import {active_server} from 'Utils/System'
 import {createPreviewCard} from 'pages/Body/PreviewBoard'
 import {pathjoin} from 'Utils/Utils'
-import {WebRTCConnection} from 'Utils/System';
+
+/******************************************************************************************************************
+ ******************************************************************************************************************
+ ** EXPORTED FUNCTIONS
+ ******************************************************************************************************************
+ ******************************************************************************************************************/
 
 /*
 example:
@@ -55,22 +58,13 @@ const icon_items_mesh = "assets/icons/icon_mesh.png";
 --     "files": ["file1.ply", "file2.ply"]} 
 -- ]
 -------------------------------------------------------------------------------------------------------------*/
-// export const request_database_content = (server_address) => {
-//     let database_obj = server_request("GET", "database", server_address, null)
-//     console.log(database_obj)
-//     if (database_obj["enabled"]) {
-//         consolePrint("INFO", "Database loaded")
-//         createDBButtons(database_obj)
-//     } else {
-//         consolePrint("WARNING", "Could not find database")
-//     }
-// }
 
-/*-------------------------------------------------------------------------------------------------------------
--- 
--------------------------------------------------------------------------------------------------------------*/
+
+
+/******************************************************************************************************************
+ ** Create database buttons
+ ******************************************************************************************************************/
 export const createDBButtons = (database_obj, previews) => {
-    //database_sets = database_obj["data"]
     $("#database_body").html("")
     $("#items_body").html("")
 
@@ -78,9 +72,9 @@ export const createDBButtons = (database_obj, previews) => {
         create_folder_button(folder, 0, "", previews)
 }
 
-/*-------------------------------------------------------------------------------------------------------------
--- function hide_subfolders
--------------------------------------------------------------------------------------------------------------*/
+/******************************************************************************************************************
+ ** Create Folder Buttons
+ ******************************************************************************************************************/
 export const create_folder_button = (folder, count, folder_path, previews) => {
     
     // add button to database area
@@ -128,9 +122,9 @@ export const create_folder_button = (folder, count, folder_path, previews) => {
     return [database_elem, arr_subs]
 }
 
-/*-------------------------------------------------------------------------------------------------------------
--- 
--------------------------------------------------------------------------------------------------------------*/
+/******************************************************************************************************************
+ ** Show Subfolders
+ ******************************************************************************************************************/
 export const show_subfolders = (fold) => {
     $("#items_body").html("")
     if(fold[0].css("display") === "none")
@@ -142,11 +136,11 @@ export const show_subfolders = (fold) => {
             el.css("display", 'none');
     }
 }
-/*-------------------------------------------------------------------------------------------------------------
--- 
--------------------------------------------------------------------------------------------------------------*/
+
+/******************************************************************************************************************
+ ** Show Files
+ ******************************************************************************************************************/
 export const show_files = (fold, file_path, previews) => {
-    
     var items_body = $("#items_body").html("")
     console.debug("%c[INFO] Open folder:", "color: orange", file_path)
     // empty preview board
@@ -208,7 +202,6 @@ export const show_files = (fold, file_path, previews) => {
             items_body.append(items_elem)  
 
             let full_path = file_path + "/" + element["name"] + ":" + file_name + ".mesh"
-            //console.log(full_path)
             // objects which are created and uploaded have no preview
             if(file_path !== "Output" && file_path !== "Uploads")
                 createPreviewCard(pathjoin(active_server, "previews", file_path), file_name, full_path, previews)
@@ -368,8 +361,6 @@ function Database(props) {
      **************************************************************************************************************
      **************************************************************************************************************/
     const [mobileMaxWidth, setMobileMaxWidth] = useState(null);
-    const [databaseSets, setDatabaseSets] = useState([]);
-
 
     const icon_return = "assets/icons/icon_arrow_left.png";
 
@@ -379,35 +370,12 @@ function Database(props) {
      **************************************************************************************************************
      **************************************************************************************************************/
 
-    // useEffect(() => {
-    //     console.log(databaseSets)
-    //     if(databaseSets.length > 0)
-    //         createDBButtons(databaseSets)
-    // }, [databaseSets]);
     /**************************************************************************************************************
      * 
      **************************************************************************************************************/
     useEffect(() => {
-        // if(WebRTCConnection !== null) {
-        //     console.log("Database: WebRTCConnection is not null")
-        //     WebRTCConnection.setDatabaseSets = setDatabaseSets;
-        // }
-
         const styles = getComputedStyle(document.documentElement);
         setMobileMaxWidth(String(styles.getPropertyValue('--mobile-max-width')).trim());
-
-        // set database content without server
-        // const fetchData = async () => {
-        //     try {
-        //         const response = await fetch('database.json');
-        //         const jsonData = await response.json();
-        //         createDBButtons(jsonData)
-        //     } catch (error) {
-        //         console.error('Error fetching JSON data:', error);
-        //     }
-        // };
-    
-        // fetchData();
     }, []);
 
 
@@ -418,8 +386,16 @@ function Database(props) {
         returnButtonStyle = {display:"block"}
     }
 
-    // Info: the corresponing button is only shown in mobile mode
-    // hide the database window and show the database server window
+    /**************************************************************************************************************
+     **************************************************************************************************************
+     ** FUNCTIONS
+     **************************************************************************************************************
+     **************************************************************************************************************/
+
+    /**************************************************************************************************************
+     * Info: the corresponing button is only shown in mobile mode
+     * hide the database window and show the database server window
+     **************************************************************************************************************/
     function returnToDatabaseServer() {
         $("#database_main").css("display", "none")
         $("#dbserver_main").css("display", "block")
@@ -441,12 +417,7 @@ function Database(props) {
                     <img id="database_return_icon" src={icon_return}/>
                 </div>
             </div>
-            <div id="database_body">
-                {/* <div className="database_elem">
-                    <img className="database_elem_icon" src={icon_database_elem} alt=""/>
-                    <div className="database_elem_text">PLACEHOLDER</div>
-                </div> */}
-            </div>
+            <div id="database_body"/>
         </div>
     );
 }

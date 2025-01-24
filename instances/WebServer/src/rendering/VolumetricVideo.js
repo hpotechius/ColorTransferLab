@@ -1,5 +1,5 @@
 /*
-Copyright 2024 by Herbert Potechius,
+Copyright 2025 by Herbert Potechius,
 Technical University of Berlin
 Faculty IV - Electrical Engineering and Computer Science - Institute of Telecommunication Systems - Communication Systems Group
 All rights reserved.
@@ -8,14 +8,20 @@ Please see the LICENSE file that should have been included as part of this packa
 */
 
 import React from "react";
-import {pathjoin} from 'Utils/Utils';
+
 import TriangleMesh from "rendering/TriangleMesh"
 
+/******************************************************************************************************************
+ ******************************************************************************************************************
+ ** FUNCTIONAL COMPONENT
+ ** 
+ ** Class for creating volumetric video objects.
+ ** A volumetric video consists of a sequence of TriangleMesh objects.
+ ******************************************************************************************************************
+ ******************************************************************************************************************/
 class VolumetricVideo {
     async createVolumetricVideo(filepath, setComplete, view) {
-        // const json_path = filepath + ".json";
         const json_path = filepath[0]
-        // console.log(json_path)
         const activeObject = [];
         const activeTextureMap = [];
         const meshRefs = [];
@@ -35,7 +41,6 @@ class VolumetricVideo {
             // [4] = path to jpg file with index 1
             // ...
             for (let i = 0; i < data["num_frames"]; i++) {
-                // let texture_path = pathjoin(filepath + "_" + paddedNumber + ".jpg");
                 let texture_path = filepath[(i * 3) + 1];
                 activeTextureMap.push(texture_path);
 

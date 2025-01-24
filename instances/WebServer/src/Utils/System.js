@@ -10,13 +10,9 @@ Please see the LICENSE file that should have been included as part of this packa
 import WebRTC from 'Utils/WebRTC';
 
 
-
-
 export let active_server = "";
-//export let RelayServer = "https://proxy.potechius.com";
-export let RelayServer = "http://192.168.178.200:8002";
-const SIGNAL_SERVER = "http://localhost:8080"; // URL des Signalservers
-// const SIGNAL_SERVER = "https://potechius.com:9090"; // URL des Signalservers
+//const SIGNAL_SERVER = "http://localhost:8071"; // URL des Signalservers
+const SIGNAL_SERVER = "https://signal.potechius.com"; // URL des Signalservers
 
 
 let WebRTCConnection = null;
@@ -26,20 +22,6 @@ const setWebRTCConnection = () => {
 };
 
 export { WebRTCConnection, setWebRTCConnection };
-
-// export const execution_params_options = []
-
-// // these parameters will be sent to the python server
-// export const execution_params_objects = {
-//     "src": "",
-//     "ref": "",
-//     "out": ""
-// }
-
-// export const execution_approach = {
-//     "method": "",
-//     "options": ""
-// }
 
 export const execution_data = {
     "source": "",

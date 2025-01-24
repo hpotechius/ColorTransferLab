@@ -1,5 +1,5 @@
 /*
-Copyright 2024 by Herbert Potechius,
+Copyright 2025 by Herbert Potechius,
 Technical University of Berlin
 Faculty IV - Electrical Engineering and Computer Science - Institute of Telecommunication Systems - Communication Systems Group
 All rights reserved.
@@ -7,43 +7,28 @@ This file is released under the "MIT License Agreement".
 Please see the LICENSE file that should have been included as part of this package.
 */
 
-import React from "react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import $ from 'jquery';
-import {consolePrint} from 'Utils/Utils'
-import {setConfiguration} from "Utils/Utils"
-import {setInformation} from "Utils/Utils"
-import {server_request} from 'Utils/Connection'
+
+import {consolePrint, setConfiguration, setInformation} from 'Utils/Utils'
 import {execution_data} from 'Utils/System'
 import './Algorithms.scss';
 
 
-/*-------------------------------------------------------------------------------------------------------------
--- Request available color transfer methods and create buttons to apply these algorithms
--------------------------------------------------------------------------------------------------------------*/
-// export const request_available_methods = (server_address) => {
-//     let stat_obj = server_request("GET", "available_methods", server_address, null)
+/******************************************************************************************************************
+ ******************************************************************************************************************
+ ** EXPORTED FUNCTIONS
+ ******************************************************************************************************************
+ ******************************************************************************************************************/
 
-//     console.log(stat_obj)
-
-//     // check if the request of available methods is fulfilled
-//     if (stat_obj["enabled"]) {
-//         consolePrint("INFO", "Color transfer methods were found: "  + stat_obj["data"].length + " in total")
-//         createCTButtons(stat_obj)
-//     } else {
-//         consolePrint("WARNING", "No color transfer methods were found")
-//     }
-// }
-
-/*-------------------------------------------------------------------------------------------------------------
--- create the color transfer methods based on the request sent to the python server
--------------------------------------------------------------------------------------------------------------*/
+/******************************************************************************************************************
+ ** Create the buttons for the color transfer, style transfer and colorization algorithms
+ ******************************************************************************************************************/
 export const createCTButtons = (stat_obj, options) => {
     $("#algorithms_content_colorTransfer").html("")
     $("#algorithms_content_styleTransfer").html("")
     $("#algorithms_content_colorization").html("")
     for (let elem of stat_obj){
-        console.log(elem)
         let containerID = ""
         if(elem["type"] === "Color Transfer")
             containerID = "#algorithms_content_colorTransfer"
@@ -53,11 +38,10 @@ export const createCTButtons = (stat_obj, options) => {
             containerID = "#algorithms_content_colorization"
 
         var d = document.createElement('div');
-        // $(d).addClass("algorithms_approach").attr("title", elem["name"]).appendTo($("#algorithms_content_colorTransfer"))
         $(d).addClass("algorithms_approach").attr("title", elem["name"]).appendTo($(containerID))
         $(d).on("click", function(){activate_color_transfer(elem, options)});
 
-        // create green dots for each available data type -> and red dots for unavailable data types
+        // create light icons for each available data type -> and dark icons for unavailable data types
         let icon_pos_right = 5;
         for(let type of ["Image", "Mesh", "PointCloud", "Video", "VolumetricVideo", "LightField", "GaussianSplatting"]){
             let icon_available;
@@ -111,10 +95,10 @@ export const createCTButtons = (stat_obj, options) => {
     }
 }
 
-/*-------------------------------------------------------------------------------------------------------------
--- By clicking on one color transfer button, the correpsonding approach will be activated by calling the
--- #activate_color_transfer()-method
--------------------------------------------------------------------------------------------------------------*/
+/******************************************************************************************************************
+ ** By clicking on one color transfer button, the correpsonding approach will be activated by calling the
+ ** activate_color_transfer()-method
+ ******************************************************************************************************************/
 export const activate_color_transfer = (param, options) => {
     console.debug("%c[INFO] Change active method to:", "color: orange;", param)
     execution_data["approach"] = param["key"]
@@ -139,6 +123,7 @@ function Algorithms(props) {
      **************************************************************************************************************/
     const [mobileMaxWidth, setMobileMaxWidth] = useState(null);
     const [componentStyle, setComponentStyle] = useState({});
+
     const icon_algorithms = "assets/icons/icon_algorithm_grey.png";
     const icon_colortransfer_button = "assets/icons/icon_colortransfer.png";
     const icon_segmentation_button = "assets/icons/icon_segmentation.png";
@@ -169,19 +154,6 @@ function Algorithms(props) {
         updateComponentStyle();
         window.addEventListener('resize', updateComponentStyle);
 
-        // sets the color transfer methods based on the methods.json file
-        // const fetchData = async () => {
-        //     try {
-        //         const response = await fetch('methods.json');
-        //         const jsonData = await response.json();
-        //         createCTButtons(jsonData)
-        //     } catch (error) {
-        //         console.error('Error fetching JSON data:', error);
-        //     }
-        // };
-    
-        // fetchData();   
-
         return () => {
             window.removeEventListener('resize', updateComponentStyle);
         };
@@ -194,7 +166,10 @@ function Algorithms(props) {
      **************************************************************************************************************/
 
     /**************************************************************************************************************
-     * 
+     * Switch the active menu
+     * (1) Color Transfer
+     * (2) Style Transfer
+     * (3) Colorization
      **************************************************************************************************************/
     function showMenus(active_menus, event) {
         const menu_list = ["#algorithms_content_colorTransfer", "#algorithms_content_styleTransfer", "#algorithms_content_colorization"]

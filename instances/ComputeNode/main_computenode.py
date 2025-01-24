@@ -31,8 +31,8 @@ parser = argparse.ArgumentParser(description="WebRTC Client")
 parser.add_argument("--input", type=str, help="The message to send automatically")
 # args = parser.parse_args()
 
-SIGNAL_SERVER = "http://localhost:8080"
-# SIGNAL_SERVER = "https://potechius.com:9090"
+#SIGNAL_SERVER = "http://localhost:8080"
+SIGNAL_SERVER = "https://signal.potechius.com"
 # SIGNAL_SERVER = "https://relay.potechius.com"
 #CLIENT_ID = "56309aa6-4414-4ad5-9bb7-9e7c83eba143"#str(uuid.uuid4())
 CLIENT_ID = str(uuid.uuid4())

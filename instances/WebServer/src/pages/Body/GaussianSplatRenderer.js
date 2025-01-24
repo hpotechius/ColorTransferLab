@@ -1,5 +1,5 @@
 /*
-Copyright 2024 by Herbert Potechius,
+Copyright 2025 by Herbert Potechius,
 Technical University of Berlin
 Faculty IV - Electrical Engineering and Computer Science - Institute of Telecommunication Systems - Communication Systems Group
 All rights reserved.
@@ -7,103 +7,96 @@ This file is released under the "MIT License Agreement".
 Please see the LICENSE file that should have been included as part of this package.
 */
 
-import "./GaussianSplatRenderer.scss"
-import * as GaussianSplats3D from '@mkkellogg/gaussian-splats-3d';
 import * as THREE from 'three';
 import {BufferAttribute} from 'three';
 import React, {Suspense, useRef, useEffect, useState, useMemo } from 'react';
-import Axes from "rendering/Axes"
+import {OrbitControls, PerspectiveCamera, OrthographicCamera} from "@react-three/drei"
+import {Canvas} from "@react-three/fiber";
 import $ from 'jquery';
+import * as GaussianSplats3D from '@mkkellogg/gaussian-splats-3d';
+import { SceneFormat } from '@mkkellogg/gaussian-splats-3d';
+// import { SceneFormat } from 'rendering/GaussianSplats3D/loaders/SceneFormat.js';
+
+import "./GaussianSplatRenderer.scss"
+import Axes from "rendering/Axes"
 import {updateHistogram, calculateColorHistograms, calculateMeanAndStdDev} from 'Utils/Utils';
 import OrbitControlNew from "rendering/OrbitControlNew";
-import { SceneFormat } from 'rendering/GaussianSplats3D/loaders/SceneFormat.js';
 import RendererButton from './RendererButton';
 import InfoField from './InfoField';
-import {Canvas} from "@react-three/fiber";
 import PointShader from 'shader/PointShader.js';
-import {OrbitControls, PerspectiveCamera, OrthographicCamera} from "@react-three/drei"
+import SettingsField from './SettingsField';
+import SettingsFieldItem from './SettingsFieldItem';
 
 /******************************************************************************************************************
  ******************************************************************************************************************
  ** FUNCTIONAL COMPONENT
+ ** 
+ ** Renderer for Gaussian Splats (.splat, .ksplat, .ply) files.
  ******************************************************************************************************************
  ******************************************************************************************************************/
 const GaussianSplatRenderer = (props) => {
+    /**************************************************************************************************************
+     **************************************************************************************************************
+     ** STATES & REFERENCES & VARIABLES
+     **************************************************************************************************************
+     **************************************************************************************************************/
     const [isFieldSettingVisible, setIsFieldSettingVisible] = useState(false);
     const [isFieldInfoVisible, setIsFieldInfoVisible] = useState(false);
     const [splatScale, setSplatScale] = useState(100.0);
     const [degree, setDegree] = useState(0);
     const [update, setUpdate] = useState(0);
+    const [info, setInfo] = useState({});
+    const [grid, changeGrid] = useState(<gridHelper args={[20,20, 0x222222, 0x222222]}/>)
+    const [axis, changeAxis] = useState(<Axes />)
+    const [cameraCan, setCameraCan] = useState(<PerspectiveCamera position={[4, 4, 4]} makeDefault />);
+    const [perspectiveView, setPerspectiveView] = useState(true)
+    const [colordistribution, setColordistribution] = useState(null)
+    const [histogram3D, setHistogram3D] = useState(null)
 
     const isSplatVisible = useRef(true);
     const isCanvasVisible = useRef(false);
     const isHistoVisible = useRef(false);
     const isDistVisible = useRef(false);
-
-    const vertexPointShader = PointShader.vertexShader
-    const fragmentPointShader = PointShader.fragmentShader
-
     const containerRef = useRef(null);
     const renderer = useRef(null);
     const camera = useRef(null);
     const viewer = useRef(null);
-
-
     const refPoints = useRef(null);
 
-    const [grid, changeGrid] = useState(<gridHelper args={[20,20, 0x222222, 0x222222]}/>)
-    const [axis, changeAxis] = useState(<Axes />)
-    const [cameraCan, setCameraCan] = useState(null);
-    const [perspectiveView, setPerspectiveView] = useState(true)
-
-    
-    const [colordistribution, setColordistribution] = useState(null)
-    const [histogram3D, setHistogram3D] = useState(null)
-
-    const [info, setInfo] = useState({});
-
+    const vertexPointShader = PointShader.vertexShader
+    const fragmentPointShader = PointShader.fragmentShader
 
     const button_settings_texture_icon = "assets/icons/icon_settings_grey.png";
-    const button_texturemap_texture_icon = "assets/icons/icon_texturemap_grey.png";
     const button_settings_dist_icon = "assets/icons/icon_dist_grey.png";
     const button_settings_histo_icon = "assets/icons/icon_histogram_grey.png";
     const button_settings_info_icon = "assets/icons/icon_information.png";
 
-    const showSettings = () => {
-        console.log("showSettings")
-        setIsFieldSettingVisible(!isFieldSettingVisible);
-    };
-
-    const handleDegreeChange = (e) => {
-        setDegree(e.target.value);
-        console.log(degree)
-    };
-
-    const handleSplatScaleChange = (e) => {
-        setSplatScale(e.target.value);
-        //console.log(splatScale)
-    };
 
     /**************************************************************************************************************
-     * 
+     **************************************************************************************************************
+     ** HOOKS
+     **************************************************************************************************************
+     **************************************************************************************************************/
+
+    /**************************************************************************************************************
+     * Shader-Data
      **************************************************************************************************************/
     let data = useMemo(
         () => ({
-          uniforms: {
-            Ka: { value: new THREE.Vector3(1, 1, 1) },
-            Kd: { value: new THREE.Vector3(1, 1, 1) },
-            Ks: { value: new THREE.Vector3(1, 1, 1) },
-            LightIntensity: { value: new THREE.Vector4(0.5, 0.5, 0.5, 1.0) },
-            LightIntensity: { value: new THREE.Vector4(1.0, 1.0, 1.0, 1.0) },
-            LightPosition: { value: new THREE.Vector4(0.0, 2000.0, 0.0, 1.0) },
-            Shininess: { value: 1.0 },
-            enableNormalColor: { value: false },
-            enableColorDistribution: { value: true },
-            pointsize: { value: 1.0}
-          },
-          vertexShader:vertexPointShader,
-          fragmentShader:fragmentPointShader,
-          
+            uniforms: {
+                Ka: { value: new THREE.Vector3(1, 1, 1) },
+                Kd: { value: new THREE.Vector3(1, 1, 1) },
+                Ks: { value: new THREE.Vector3(1, 1, 1) },
+                LightIntensity: { value: new THREE.Vector4(0.5, 0.5, 0.5, 1.0) },
+                LightIntensity: { value: new THREE.Vector4(1.0, 1.0, 1.0, 1.0) },
+                LightPosition: { value: new THREE.Vector4(0.0, 2000.0, 0.0, 1.0) },
+                Shininess: { value: 1.0 },
+                enableNormalColor: { value: false },
+                enableColorDistribution: { value: true },
+                pointsize: { value: 1.0}
+            },
+            vertexShader:vertexPointShader,
+            fragmentShader:fragmentPointShader,
         }),
         []
     )
@@ -112,20 +105,9 @@ const GaussianSplatRenderer = (props) => {
      * 
      **************************************************************************************************************/
     useEffect(() => {
-        if (perspectiveView) {
-            setCameraCan(<PerspectiveCamera position={[4, 4, 4]} makeDefault />)
-        } else {
-            setCameraCan(<OrthographicCamera position={[10, 10, 10]} zoom={40} makeDefault />);
-        }
-    }, [perspectiveView]);
-
-    useEffect(() => {
         const container = containerRef.current;
         const width = container.clientWidth;
         const height = container.clientHeight;
-
-        // Erstelle die Szene
-        //const threeScene = new THREE.Scene();
 
         // Erstelle die Kamera
         camera.current = new THREE.PerspectiveCamera(65, width / height, 0.1, 500);
@@ -141,7 +123,6 @@ const GaussianSplatRenderer = (props) => {
 
         // Erstelle den Viewer
         viewer.current = new GaussianSplats3D.Viewer({
-        //viewer.current = new GaussianSplats3DViewer({
             'renderer': renderer.current,
             "camera": camera.current,
             'sphericalHarmonicsDegree': 3,
@@ -157,7 +138,7 @@ const GaussianSplatRenderer = (props) => {
         const handleKeyDown = (event) => {
             if (event.key === 'q' || event.key === 'Q') {
                 viewer.current.splatMesh.rotation.y -= 0.1;
-            } else if (event.key === 'r' || event.key === 'R') {
+            } else if (event.key === 'e' || event.key === 'E') {
                 viewer.current.splatMesh.rotation.y += 0.1;
             }
             else if (event.key === 'a' || event.key === 'A') {
@@ -174,20 +155,21 @@ const GaussianSplatRenderer = (props) => {
 
         window.addEventListener('keydown', handleKeyDown);
 
-
         // Bereinige den Renderer bei der Demontage der Komponente
         return () => {
             container.removeChild(renderer.current.domElement);
         };
     }, []);
 
+    /**************************************************************************************************************
+     * Renders new object if a new file is loaded
+     **************************************************************************************************************/
     useEffect(() => {
         if (props.filePath !== null) {
             isSplatVisible.current = true;
             isCanvasVisible.current = false;
             isHistoVisible.current = false;
             isDistVisible.current = false;
-
 
             // file name should be in the format "filename-ksplat.gsp"
             // gsp has to be removed and the "-" has to be replaced by "."
@@ -212,22 +194,16 @@ const GaussianSplatRenderer = (props) => {
                     "showLoadingUI": false,
                     "format": format,
                     onProgress: (progress) => {
-
                         // Update the progress bar
                         const renderbarprocessingid = props.renderBarID + "_processing"
                         const renderbartextid = props.renderBarID + "_text"
                         $(`#${props.renderBarID}`).css("display", "flex")
                         $(`#${renderbarprocessingid}`).css("width", Math.round(progress).toString() + "%")
                         $(`#${renderbartextid}`).html("Processing...");
-                        //console.log( Math.round(progress));
-                        //setLoaded(progress)calc(100% - 2px)
-                        // $(`#${props.renderBarID}`).css("width", Math.round(progress).toString() + "%")
                     }})
                     .then(() => {
                         requestAnimationFrame(update);
-                        //viewer.current.splatMesh.setSplatScale(0.1);
                         props.setComplete(Math.random())
-                        // $(`#${props.renderBarID}`).css("width", "0%")
 
                         const renderbarprocessingid = props.renderBarID + "_processing"
                         const renderbartextid = props.renderBarID + "_text"
@@ -236,6 +212,7 @@ const GaussianSplatRenderer = (props) => {
                         $(`#${renderbartextid}`).html("");
 
                         const pixelArray = viewer.current.splatMesh.splatDataTextures.baseData.colors
+
                         const histograms = calculateColorHistograms(pixelArray, false, 4)
                         const { mean, stdDev } = calculateMeanAndStdDev(pixelArray, false, 4);
                         updateHistogram(histograms[0], mean, stdDev, props.view)
@@ -243,7 +220,8 @@ const GaussianSplatRenderer = (props) => {
                         setHistogram3D(histograms[1])
 
                         let colors_buf = new Float32Array(pixelArray)
-                        // Entfernen jedes vierten Wertes aus colors_buf und Teilen der verbleibenden Werte durch 255
+   
+                        // Removal of every fourth value from colors_buf and division of the remaining values by 255
                         const filteredColorsBuf = colors_buf
                             .filter((_, index) => (index + 1) % 4 !== 0)
                             .map(value => value / 255);
@@ -263,9 +241,6 @@ const GaussianSplatRenderer = (props) => {
     
             function update() {
                 requestAnimationFrame(update);
-
-                //console.log(splatScale)
-
                 renderer.current.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
                 camera.current.aspect = containerRef.current.clientWidth / containerRef.current.clientHeight;
                 camera.current.updateProjectionMatrix();
@@ -275,6 +250,9 @@ const GaussianSplatRenderer = (props) => {
         }
     }, [props.filePath]);
 
+    /**************************************************************************************************************
+     * Change Splatscale
+     **************************************************************************************************************/
     useEffect(() => {
         if (viewer.current !== null && viewer.current.splatMesh !== undefined) {
             // the initial execution of this function will fail because the splatMesh is not yet created
@@ -283,12 +261,42 @@ const GaussianSplatRenderer = (props) => {
         }
     }, [splatScale]);
 
+    /**************************************************************************************************************
+     **************************************************************************************************************
+     ** FUNCTIONS
+     **************************************************************************************************************
+     **************************************************************************************************************/
+    
+    /**************************************************************************************************************
+     * Shows the settings field for the renderer.
+     * (1) Degree of the spherical harmonics
+     * (2) Splat scale
+     **************************************************************************************************************/
+    const showSettings = () => {
+        setIsFieldSettingVisible(!isFieldSettingVisible);
+    };
 
     /**************************************************************************************************************
-     * 
+     * Changes the degree of the spherical harmonics.
+     * Values between 0 and 3 are allowed.
+     **************************************************************************************************************/
+    const handleDegreeChange = (e) => {
+        setDegree(e.target.value);
+        console.log(degree)
+    };
+
+    /**************************************************************************************************************
+     * Changes the splat scale.
+     * Values between 0 and 100 are allowed.
+     **************************************************************************************************************/
+    const handleSplatScaleChange = (e) => {
+        setSplatScale(e.target.value);
+    };
+
+    /**************************************************************************************************************
+     * Switches between the gaussian splat view and the 3D color histogram view.
      **************************************************************************************************************/
     const switchColorHistogram = () => {
-        console.log("switchColorHistogram")
         isHistoVisible.current = !isHistoVisible.current;
 
         if (!isDistVisible.current) {
@@ -301,7 +309,8 @@ const GaussianSplatRenderer = (props) => {
     }
 
     /**************************************************************************************************************
-     * 
+     * Shows the information field of the current object.
+     * (1) Number of vertices
      **************************************************************************************************************/
     const showInfo = () => {
         setIsFieldInfoVisible(!isFieldInfoVisible);
@@ -313,7 +322,7 @@ const GaussianSplatRenderer = (props) => {
     }
 
     /**************************************************************************************************************
-     * 
+     * Switches between the gaussian splat view and the 3D color distribution view.
      **************************************************************************************************************/
     const switchColorDistribution = () => {
         isDistVisible.current = !isDistVisible.current;
@@ -326,14 +335,6 @@ const GaussianSplatRenderer = (props) => {
         isHistoVisible.current = false;
         setUpdate(Math.random())
     }
-
-    /**************************************************************************************************************
-     * 
-     **************************************************************************************************************/
-        const handlePointSizeChange = (e) => {
-            refPoints.current.material.uniforms.pointsize = {value: e.target.value}
-            setUpdate(Math.random())
-        }
 
     /**************************************************************************************************************
      **************************************************************************************************************
@@ -360,7 +361,6 @@ const GaussianSplatRenderer = (props) => {
                     display: isSplatVisible.current ? "block" : "none"
                 }
             }></div>
-
 
             {/* Canvas for rendering the color distribution */}
             <Canvas 
@@ -392,50 +392,18 @@ const GaussianSplatRenderer = (props) => {
                 </Suspense>
             </Canvas> 
 
-
             {/* Information field of the current object. Show for point clouds the number of vertices, etc. */}
             <InfoField visibility={isFieldInfoVisible}>
-            {/* <InfoField visibility={"block"}> */}
                 {info}
             </InfoField>
 
-
-
             {/* Settings field */}
-            <div className="gs_field_settings" style={{ display: isFieldSettingVisible ? 'block' : 'none' }}>
-                <table style={{width:"100%"}}>
-                    <tbody>
-                        <tr>
-                            <td className='gs_field_settings_table_cell'>Degree</td>
-                            <td className='gs_field_settings_table_cell'>
-                                <input 
-                                    type="range" 
-                                    min="0" 
-                                    max="3" 
-                                    value={degree}
-                                    onChange={handleDegreeChange} 
-                                />
-                            </td>
-                        </tr>
-                        <tr>
-                            <td className='gs_field_settings_table_cell'>Splat Scale</td>
-                            <td className='gs_field_settings_table_cell'>
-                                <input 
-                                    type="range" 
-                                    min="0" 
-                                    max="100" 
-                                    value={splatScale}
-                                    onChange={handleSplatScaleChange} 
-                                />
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+            <SettingsField visibility={isFieldSettingVisible}>
+                <SettingsFieldItem type={"range"} min="0" max="3" value={degree} onChange={handleDegreeChange}>Degree</SettingsFieldItem>
+                <SettingsFieldItem type={"range"} min="0" max="100" value={splatScale} onChange={handleSplatScaleChange}>Splat Scale</SettingsFieldItem>
+            </SettingsField>
         </div>
-        
     )
-
 };
 
 export default GaussianSplatRenderer;

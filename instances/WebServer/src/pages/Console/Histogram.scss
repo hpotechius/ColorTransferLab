@@ -1,5 +1,5 @@
 /*
-Copyright 2024 by Herbert Potechius,
+Copyright 2025 by Herbert Potechius,
 Technical University of Berlin
 Faculty IV - Electrical Engineering and Computer Science - Institute of Telecommunication Systems - Communication Systems Group
 All rights reserved.
@@ -22,7 +22,6 @@ Please see the LICENSE file that should have been included as part of this packa
     $scrolloffset: 20px;
     position: absolute;
     background-color: black;
-    //height: calc(159px - 30px);
     height: calc(100% - 40px);
     width: calc((100% - 2 * 5px - #{$scrolloffset}) / 3 - 8px);
     margin: 4px;

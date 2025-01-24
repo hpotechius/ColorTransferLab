@@ -27,13 +27,7 @@ table {
     background-color: white;
     opacity: 0.8;
     border-radius: 10px;
-    /* margin: 50px; */
 }
-
-/* thead {
-    background-color: #2E2E2E;
-    color: white;
-} */
 
 th, td {
     padding: 10px;
@@ -86,10 +80,6 @@ li {
     display: inline-block;
 }
 
-.type-Database {
+.type-ComputeNode {
     background-color: orange;
-}
-
-.type-CEServer {
-    background-color: lightblue;
 }

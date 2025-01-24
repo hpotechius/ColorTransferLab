@@ -8,14 +8,10 @@ Please see the LICENSE file that should have been included as part of this packa
 */
 
 import $ from 'jquery'
-import {active_server} from 'Utils/System'
-import {available_metrics} from 'Utils/System'
-import {evaluation_results} from 'Utils/System'
-import {server_request} from 'Utils/Connection'
 import * as THREE from "three";
 import {TextureLoader} from 'three';
-import {execution_data} from 'Utils/System'
-import { WebRTCConnection } from 'Utils/System';
+
+import {evaluation_results, execution_data, WebRTCConnection} from 'Utils/System'
 
 
 /******************************************************************************************************************
@@ -49,131 +45,10 @@ export const evalPrint = () => {
     }
     console.debug("%c[SEND] WebRTC Request to Database: Apply Evaluation with metric: PSNR for data:", "color: lightgreen;", out_dat)
     WebRTCConnection.sendMessage(JSON.stringify(out_dat))
-
-    // try {
-    //     const xmlHttp = new XMLHttpRequest();
-    //     const theUrl = pathjoin(active_server, "evaluation");
-    //     xmlHttp.open( "POST", theUrl, true );
-
-    //     xmlHttp.onload = function (e) {
-    //         if (xmlHttp.readyState === 4) {
-    //             if (xmlHttp.status === 200) {
-    //                 //var stat = xmlHttp.responseText.replaceAll("\'", "\"");
-    //                 var stat = xmlHttp.responseText.replaceAll("'", "\"");
-    //                 var stat_obj = JSON.parse(stat);
-    //                 var eval_values = stat_obj["data"]
-    //                 console.log("EVAL")
-    //                 console.log(stat_obj)
-
-    //                 if(stat_obj["enabled"] === "false")
-    //                 {
-    //                     consolePrint("ERROR", "Evaluation only for images available...")
-    //                 }
-    //                 else 
-    //                 {
-    //                     // init evaluation
-    //                     var console_eval = document.getElementById("Console_tab_console_evaluation")
-    //                     console_eval.innerHTML = ""
-
-    //                     const tbl = document.createElement("table");
-    //                     const tblBody = document.createElement("tbody");
-
-    //                     // create table header
-    //                     const cell = document.createElement("th");
-    //                     const cellText = document.createTextNode("Metric")
-    //                     cell.appendChild(cellText);
-    //                     const cell2 = document.createElement("th");
-    //                     const cellText2 = document.createTextNode("Value")
-    //                     cell2.appendChild(cellText2);
-
-    //                     const row = document.createElement("tr");
-    //                     row.appendChild(cell);
-    //                     row.appendChild(cell2);
-    //                     tblBody.appendChild(row)
-
-    //                     for(let j = 0; j < available_metrics.length; j++) {
-    //                         const cell = document.createElement("td");
-    //                         const cellText = document.createTextNode(available_metrics[j])
-    //                         cell.appendChild(cellText);
-
-    //                         const cell2 = document.createElement("td");
-    //                         let cellText2
-    //                         let eval_result
-    //                         if (typeof eval_values[available_metrics[j]] !== 'undefined')
-    //                             eval_result = eval_values[available_metrics[j]]
-    //                         else
-    //                             eval_result = -1
-    //                         cellText2 = document.createTextNode(eval_result)
-    //                         evaluation_results[available_metrics[j]] = eval_result
-
-    //                         cell2.appendChild(cellText2);
-
-    //                         const row = document.createElement("tr");
-    //                         row.appendChild(cell);
-    //                         row.appendChild(cell2);
-    //                         tblBody.appendChild(row)
-    //                     }
-
-    //                     tbl.appendChild(tblBody);
-    //                     tbl.setAttribute("tableLayout", "auto");
-    //                     tbl.setAttribute("width", "100%");
-    //                     console_eval.append(tbl)
-    //                     consolePrint("INFO", "Evaluation done...")
-    //                 }
-                
-    //             } else {
-    //                 console.error(xmlHttp.statusText);
-    //             }
-    //         }
-    //     };
-    //     xmlHttp.onerror = function (e) {
-    //         console.error(xmlHttp.statusText);
-    //     };
-    //     xmlHttp.onloadend = function (e) {
-    //         // changeEnableupdate(Math.random())
-    //     };
-
-    //     var out_dat = {
-    //         "source": execution_data["source"],
-    //         "reference": execution_data["reference"],
-    //         "output": execution_data["output"],
-    //     }
-
-    //     xmlHttp.send(JSON.stringify(out_dat));
-    // } catch (e) {
-    //     console.log(e)
-    // }
 }
 
 /******************************************************************************************************************
- * Request available color transfer metrics and create entries
- ******************************************************************************************************************/
-// export const request_available_metrics = (server_address) => {
-//     let stat_obj = server_request("GET", "available_metrics", server_address, null)
-    
-//     // check if the request of available methods is fulfilled
-//     if (stat_obj["enabled"]) {
-//         consolePrint("INFO", "Color transfer metrics were found: "  + stat_obj["data"].length + " in total")
-//         createMetricEntries(stat_obj["data"])
-//         available_metrics = stat_obj["data"]
-//         createEmptyEvaluationResults(stat_obj["data"])
-//     } else {
-//         consolePrint("WARNING", "No color transfer metrics were found")
-//     }
-// }
-
-/******************************************************************************************************************
- * 
- ******************************************************************************************************************/
-const createEmptyEvaluationResults = (data) => {
-    for(let item of data) {
-        evaluation_results[item] = null
-    }
-    console.log(evaluation_results)
-}
-
-/******************************************************************************************************************
- * 
+ * Export evaluation results to a JSON file.
  ******************************************************************************************************************/
 export const exportMetrics = () => {
     if(Object.keys(evaluation_results).length === 0) {
@@ -270,7 +145,7 @@ export const consolePrint = (type, output) => {
 }
 
 /******************************************************************************************************************
- * 
+ * Combines the given path elements to a single path.
  ******************************************************************************************************************/
 export const pathjoin = (...vals) => {
     let joinedpath = "";
@@ -290,7 +165,7 @@ export const pathjoin = (...vals) => {
 }
 
 /******************************************************************************************************************
- * 
+ * Get a random ID.
  ******************************************************************************************************************/
 export const getRandomID = () => {
     var rid = Math.random().toString().replace(".", "OUTPUT")
@@ -304,7 +179,6 @@ export const setConfiguration = (param) => {
     // set options in configuration tab of console
     const configurationview = $("#console_configuration").html("")
 
-    // const tbl = document.createElement("table");
     const tblBody = $("<tbody/>");
     const headerVal = ["Parameter", "Value", "Type", "Choices"]
     const optionsVal = ["name", "default", "type", "values"]
@@ -502,11 +376,7 @@ export const updateHistogram = (stat_obj, mean, std, window) => {
 
     let canvasid = "histogram_canvas_" + window
     let histostatsid = "histogram_stats_" + window
-
-
     var histogram = stat_obj
-    //var mean = stat_obj["data"]["mean"]
-    //var std = stat_obj["data"]["std"]
 
     function findMaxIn2DArray(array) {
         let max = -Infinity;
@@ -521,8 +391,6 @@ export const updateHistogram = (stat_obj, mean, std, window) => {
     }
 
     const maxV = findMaxIn2DArray(histogram)
-    //var maxV = Math.max.apply(null, histogram.map(function(row){ return Math.max.apply(Math, row); }))
-
     var histogram_scaled = []
     for(var i = 0; i < histogram.length; i++)
         histogram_scaled[i] = [Math.floor(histogram[i][0]/maxV*100), Math.floor(histogram[i][1]/maxV*100), Math.floor(histogram[i][2]/maxV*100)];
@@ -604,7 +472,7 @@ export const calculateMeanAndStdDev = (colorsArray, normalized, channels) => {
 export const calculateColorHistograms = (colorsArray, normalized, channels) => {
     // create a histogram of colors for rendering in the histogram tab of the console
     const histogram = new Array(256).fill(null).map(() => new Array(3).fill(0));
-    // Initialisieren Sie ein 3D-Array für die Bins
+    // Initialise a 3D array for the bins
     const bins = new Array(10).fill(null).map(() => 
         new Array(10).fill(null).map(() => 
             new Array(10).fill(0)
@@ -638,12 +506,12 @@ export const calculateColorHistograms = (colorsArray, normalized, channels) => {
         histogram[g][1]++;
         histogram[b][2]++;
 
-        // Bestimmen Sie die Bin-Indizes
+        // Determining the bin indices
         const rBin = Math.min(Math.floor(rScale * 10), 9);
         const gBin = Math.min(Math.floor(gScale * 10), 9);
         const bBin = Math.min(Math.floor(bScale * 10), 9);
 
-        // Erhöhen Sie die Zählung für das entsprechende Bin
+        // Increase the count for the corresponding bin
         bins[rBin][gBin][bBin]++;
         if (bins[rBin][gBin][bBin] > maxValue) {
             maxValue = bins[rBin][gBin][bBin];
@@ -660,13 +528,13 @@ export const calculateColorHistograms = (colorsArray, normalized, channels) => {
                 if (bins[r][g][b] > 0) {
                     const color = new THREE.Color(r / 10 + 0.05, g / 10 + 0.05, b / 10 + 0.05);
 
-
                     // 0.05 is added to the color values to place the sphere in the center of the bin
                     // Each bin has a size of 0.1.
                     const position = new THREE.Vector3((r / 10 + 0.05) * 4, (g / 10 + 0.05) * 4, (b / 10 + 0.05) * 4) ;
                     // caluculate radius of sphere based on the scaled volume of the sphere
                     const radius = Math.pow(bins[r][g][b] / maxValue  * maxVolume / Math.PI * 3/4, 1/3);
-                    const scale = Math.max(radius / 10 * 4 * 2, 0.05)//bins[r][g][b] / maxValue / 10 * 4; // Skalierung, damit die größte Kugel das gesamte Bin ausfüllt
+                    // Sacling so that the largest sphere fills the entire bin
+                    const scale = Math.max(radius / 10 * 4 * 2, 0.05)//bins[r][g][b] / maxValue / 10 * 4; 
 
                     spheres.push(
                         <mesh key={`${r}-${g}-${b}`} position={position} scale={[scale, scale, scale]}>
@@ -699,7 +567,6 @@ export const loadTextureAndConvertToArray = (url, callback) => {
             canvas.width = texture.image.width;
             canvas.height = texture.image.height;
 
-
             // Draw the texture onto the canvas
             context.drawImage(texture.image, 0, 0);
 
@@ -707,7 +574,7 @@ export const loadTextureAndConvertToArray = (url, callback) => {
             const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
             const pixelArray = imageData.data;
 
-            // Die Anzahl der Kanäle ist 4 (RGBA) für ein Standard-Canvas
+            // The amount of channels is 4 (RGBA) for a standard canvas
             const numberOfChannels = imageData.data.length / (canvas.width * canvas.height);
 
             // Call the callback function with the pixel array

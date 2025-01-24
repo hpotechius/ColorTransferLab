@@ -1,5 +1,5 @@
 /*
-Copyright 2024 by Herbert Potechius,
+Copyright 2025 by Herbert Potechius,
 Technical University of Berlin
 Faculty IV - Electrical Engineering and Computer Science - Institute of Telecommunication Systems - Communication Systems Group
 All rights reserved.
@@ -10,10 +10,11 @@ Please see the LICENSE file that should have been included as part of this packa
 
 import io from "socket.io-client";
 import { v4 as uuidv4 } from 'uuid';
+import $ from "jquery";
+
 import {createDBButtons} from 'pages/SideBarRight/Database'
 import {createCTButtons} from 'pages/SideBarLeft/Algorithms'
-import {createServerButtons} from 'pages/SideBarRight/DatabaseServer'
-import $, { data } from "jquery";
+import {createServerButtons} from 'pages/SideBarRight/ComputeNode'
 
 
 /******************************************************************************************************************
@@ -68,7 +69,8 @@ class WebRTC {
             set: (value) => {
                 this.__responseFile = value;
                 if (this.onResponseFileChange) {
-                    this.onResponseFileChange(value); // Funktion aufrufen, wenn sich die Variable ändert
+                    // call function when variable changes
+                    this.onResponseFileChange(value);
                 }
             }
         });
@@ -77,7 +79,8 @@ class WebRTC {
             set: (value) => {
                 this.__responseSrcFile = value;
                 if (this.onResponseSrcFileChange) {
-                    this.onResponseSrcFileChange(value); // Funktion aufrufen, wenn sich die Variable ändert
+                    // call function when variable changes
+                    this.onResponseSrcFileChange(value);
                 }
             }
         });
@@ -86,7 +89,8 @@ class WebRTC {
             set: (value) => {
                 this.__responseRefFile = value;
                 if (this.onResponseRefFileChange) {
-                    this.onResponseRefFileChange(value); // Funktion aufrufen, wenn sich die Variable ändert
+                    // call function when variable changes
+                    this.onResponseRefFileChange(value);
                 }
             }
         });
@@ -95,7 +99,8 @@ class WebRTC {
             set: (value) => {
                 this.__responseOutFile = value;
                 if (this.onResponseOutFileChange) {
-                    this.onResponseOutFileChange(value); // Funktion aufrufen, wenn sich die Variable ändert
+                    // call function when variable changes
+                    this.onResponseOutFileChange(value);
                 }
             }
         });
@@ -133,16 +138,11 @@ class WebRTC {
         });
 
         this.socket.on("sid", async (data) => {
-            //console.log("SID received from Signal Server:", data);
             this.sid = data
-            //await this.handleDbRequest(data);
         });
 
-
         this.socket.on("/ip_address", async (data) => {
-            //console.log("SID received from Signal Server:", data);
             this.ip_address = data
-            //await this.handleDbRequest(data);
         });
 
         this.initPeerConnection();
@@ -186,16 +186,10 @@ class WebRTC {
      * 
      **************************************************************************************************************/
     sendServerMessage(message, data) {
-        if(message == "/database") {
-            //this.setDatabaseList = setList
-            // createServerButtons(setList)
-        }
-
         this.socket.emit("message", {
             type: "answer",
             message: message,
             data: data,
-            //sdp: answer.sdp,
             target: "server",
             from: this.client_id,
         });
@@ -246,7 +240,6 @@ class WebRTC {
      * 
      **************************************************************************************************************/
     handleAnswer = async (sdp) => {
-        console.log("Handling answer:", sdp);
         await this.peerConnection.setRemoteDescription(
             new RTCSessionDescription({ type: "answer", sdp })
         );
@@ -264,7 +257,6 @@ class WebRTC {
      * 
      **************************************************************************************************************/
     handleDbRequest = async (data) => {
-        // this.setDatabaseList(data)
         createServerButtons(data)
     };
 
@@ -306,7 +298,11 @@ class WebRTC {
             };
         };
 
-        this.dataChannel = this.peerConnection.createDataChannel("chat");
+        this.dataChannel = this.peerConnection.createDataChannel("dataChannel", {
+            ordered: true,  // Ensure messages are delivered in order
+            //maxRetransmits: -1  // Unlimited retransmissions for reliability
+        });
+
         this.dataChannel.onopen = () => {
             console.debug("%c[INFO] DataChannel is open", "color: orange;");
         };
@@ -337,12 +333,13 @@ class WebRTC {
      * 
      **************************************************************************************************************/
     async onMessage(event) {
+        console.log("Received message");
         if (typeof event.data === "string") {
             let messageString = event.data.replace(/'/g, '"');
             messageString = messageString.replaceAll("True", "true");
             messageString = messageString.replaceAll("False", "false");
             messageString = messageString.replaceAll("None", "null");
-            // console.log("Received message:", messageString);
+            
             const message = JSON.parse(messageString)
             if(message.message == "dbStructure") {
                 console.debug("%c[RECV] WebRTC Response from Database: Received DB Structure", "color: lightblue;", message.data)
@@ -486,14 +483,13 @@ class WebRTC {
     createOffer = async (sid) => {
         this.database_id = sid
 
-        this.dataChannel = this.peerConnection.createDataChannel("chat");
+        //this.dataChannel = this.peerConnection.createDataChannel("chat");
+        this.dataChannel = this.peerConnection.createDataChannel("dataChannel", {
+            ordered: true,  // Ensure messages are delivered in order
+            //maxRetransmits: -1,  // Unlimited retransmissions for reliability
+            //maxPacketLifeTime: null // Keine Zeitbegrenzung für die Übertragung
+        });
         this.dataChannel.onopen = () => {
-            // console.debug("%c[SEND] WebRTC Request to Database: Get Database Structure via /dbStructure", "color: lightgreen;");
-            // const data_send = {
-            //     command: "dbStructure",
-            //     data: "none"
-            // }
-
             console.debug("%c[SEND] WebRTC Request to Compute Node: Set Client Information in Compute Node", "color: lightgreen;");
             let data_send = {
                 command: "/ip_address",
@@ -513,27 +509,63 @@ class WebRTC {
             this.sendMessage(JSON.stringify(data_send))
         };
         this.dataChannel.onmessage = (event) => {
-           
             this.onMessage(event)
-
-            //console.log(JSON.parse(databaseString))
-        //  setMessages((prev) => [...prev, `Received: ${event.data}`]);
         };
 
         this.dataChannel.onclose = () => {
             console.log("DataChannel is closed FUUUUU");
         }
+
+        this.dataChannel.onerror = (error) => {
+            console.error("DataChannel error:", error);
+        };
     
-        const offer = await this.peerConnection.createOffer();
-        await this.peerConnection.setLocalDescription(offer);
+        // const offer = await this.peerConnection.createOffer();
+        // await this.peerConnection.setLocalDescription(offer);
     
-        console.debug("%c[SEND] WebRTC Request to Server: Sending Offer", "color: lightgreen;", offer);
-        this.socket.emit("message", {
-            type: "offer",
-            sdp: offer.sdp,
-            target: sid,
-            from: this.client_id,
-        });
+        // console.debug("%c[SEND] WebRTC Request to Server: Sending Offer", "color: lightgreen;", offer);
+        // this.socket.emit("message", {
+        //     type: "offer",
+        //     sdp: offer.sdp,
+        //     target: sid,
+        //     from: this.client_id,
+        // });
+
+        try {
+            const offer = await this.peerConnection.createOffer();
+            await this.peerConnection.setLocalDescription(offer);
+
+
+            // SDP anpassen, um größere Nachrichten zu ermöglichen
+            // const localDescription = this.peerConnection.localDescription;
+            // const sdpWithIncreasedMaxMessageSize = localDescription.sdp.replace(
+            //     /a=sctp-port:5000\r\n/,
+            //     `a=sctp-port:5000\r\na=max-message-size:10485760\r\n` // Setzt die maximale Nachrichtengröße auf 10 MB
+            // );
+
+            // await this.peerConnection.setLocalDescription({
+            //     type: localDescription.type,
+            //     sdp: sdpWithIncreasedMaxMessageSize,
+            // });
+
+
+
+            console.debug("%c[SEND] WebRTC Request to Server: Sending Offer", "color: lightgreen;", offer);
+            this.socket.emit("message", {
+                type: "offer",
+                sdp: offer.sdp,
+                target: sid,
+                from: this.client_id,
+            }, (ack) => {
+                if (ack.status === 'ok') {
+                    console.debug("Offer successfully sent and acknowledged by server.");
+                } else {
+                    console.error("Failed to send offer:", ack.error);
+                }
+            });
+        } catch (error) {
+            console.error("Error creating or setting local description:", error);
+        }    
     };
 }
 

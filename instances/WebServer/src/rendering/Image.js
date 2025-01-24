@@ -1,5 +1,5 @@
 /*
-Copyright 2024 by Herbert Potechius,
+Copyright 2025 by Herbert Potechius,
 Technical University of Berlin
 Faculty IV - Electrical Engineering and Computer Science - Institute of Telecommunication Systems - Communication Systems Group
 All rights reserved.
@@ -8,9 +8,9 @@ Please see the LICENSE file that should have been included as part of this packa
 */
 
 import React, {useEffect, useState, forwardRef, useImperativeHandle} from 'react';
-import {updateHistogram, loadTextureAndConvertToArray, calculateColorHistograms, calculateMeanAndStdDev} from 'Utils/Utils';
 import {BufferAttribute} from 'three';
-import { WebRTCConnection } from 'Utils/System';
+
+import {updateHistogram, loadTextureAndConvertToArray, calculateColorHistograms, calculateMeanAndStdDev} from 'Utils/Utils';
 
 /******************************************************************************************************************
  ******************************************************************************************************************
@@ -37,8 +37,6 @@ const Image = forwardRef((props, ref) => {
     const [imagePath, setImagePath] = useState(null)
     const [textureloaded, setTextureloaded] = useState(false)
 
-    //const histogram3D = useRef([]);
-
     /**************************************************************************************************************
      **************************************************************************************************************
      ** HOOKS
@@ -46,7 +44,11 @@ const Image = forwardRef((props, ref) => {
      **************************************************************************************************************/
 
     /**************************************************************************************************************
+     * useImperativeHandle hook to expose methods to parent components
      * 
+     * This hook allows the parent component to access and update the state of this component.
+     * - getState: Returns the current state.
+     * - updateState: Merges the new state with the previous state and updates it.
      **************************************************************************************************************/
     useImperativeHandle(ref, () => ({
         getState() {
@@ -61,7 +63,7 @@ const Image = forwardRef((props, ref) => {
     }));
 
     /**************************************************************************************************************
-     * 
+     * Update the histogram data for 2D and 3D rendering
      **************************************************************************************************************/
     useEffect(() => {
         setImagePath(props.filePath)
@@ -77,14 +79,11 @@ const Image = forwardRef((props, ref) => {
                 updateHistogram(histogram2D, mean, stdDev, props.view)
 
                 let colors_buf = new Float32Array(pixelArray)
-                // Entfernen jedes vierten Wertes aus colors_buf und Teilen der verbleibenden Werte durch 255
+                // Remove every fourth value from colors_buf and divide the remaining values by 255
                 const filteredColorsBuf = colors_buf
                     .filter((_, index) => (index + 1) % 4 !== 0)
                     .map(value => value / 255);
 
-                //colors.current = new BufferAttribute(new Float32Array(filteredColorsBuf), 3);
-
-                //histogram3D.current = histograms[1]
                 setState(prevState => ({
                     ...prevState,
                     histogram3D: histograms[1],
@@ -120,7 +119,6 @@ const Image = forwardRef((props, ref) => {
             }}
         >
             <img 
-                //ref={imageRef} 
                 id={props.innerid} 
                 className="renderer_image_inner" 
                 data-update={0}

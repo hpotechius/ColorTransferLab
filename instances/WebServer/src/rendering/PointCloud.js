@@ -1,5 +1,5 @@
 /*
-Copyright 2024 by Herbert Potechius,
+Copyright 2025 by Herbert Potechius,
 Technical University of Berlin
 Faculty IV - Electrical Engineering and Computer Science - Institute of Telecommunication Systems - Communication Systems Group
 All rights reserved.
@@ -16,6 +16,7 @@ import {BufferAttribute} from "three";
 import {useFrame} from "@react-three/fiber";
 import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader'
 import * as THREE from 'three'
+
 import PointShader from "shader/PointShader"
 import { updateHistogram, calculateColorHistograms, calculateMeanAndStdDev } from 'Utils/Utils';
 import $ from 'jquery';
@@ -154,8 +155,8 @@ const PointCloud = forwardRef((props, ref) => {
                     }
                 }));
 
-                // Skalieren der Farbwerte von 0-1 auf 0-255
-                // Berechnung des Mittelwerts und der Standardabweichung für jeden Kanal
+                // Sacling the color values from 0-1 to 0-255
+                // Calculate the mean and standard deviation for each channel
                 const { mean, stdDev } = calculateMeanAndStdDev(colors.current.array, true, 3);
 
                 // set the histogram data for 2D and 3D rendering
@@ -172,7 +173,6 @@ const PointCloud = forwardRef((props, ref) => {
                 updateHistogram(histograms[0], mean, stdDev, props.view)
 
                 // Resets the progress bar after loading is complete
-                // $(`#${props.renderBar}`).css("width", "0%")
                 const renderbarprocessingid = props.renderBar + "_processing"
                 const renderbartextid = props.renderBar + "_text"
                 $(`#${props.renderBar}`).css("display", "none")
@@ -186,7 +186,6 @@ const PointCloud = forwardRef((props, ref) => {
             // called when loading is in progresses
             function ( xhr ) {
                 var progress = ( xhr.loaded / xhr.total * 100 );
-
                 const renderbarprocessingid = props.renderBar + "_processing"
                 const renderbartextid = props.renderBar + "_text"
                 $(`#${props.renderBar}`).css("display", "flex")

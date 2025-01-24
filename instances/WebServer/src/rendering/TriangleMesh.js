@@ -1,5 +1,5 @@
 /*
-Copyright 2024 by Herbert Potechius,
+Copyright 2025 by Herbert Potechius,
 Technical University of Berlin
 Faculty IV - Electrical Engineering and Computer Science - Institute of Telecommunication Systems - Communication Systems Group
 All rights reserved.
@@ -14,6 +14,7 @@ import {MTLLoader} from 'three/examples/jsm/loaders/MTLLoader'
 import {useFrame} from "@react-three/fiber";
 import * as THREE from "three";
 import {BufferAttribute} from 'three';
+
 import {updateHistogram, calculateColorHistograms, calculateMeanAndStdDev,loadTextureAndConvertToArray} from 'Utils/Utils';
 import MeshShader from 'shader/MeshShader.js';
 import PointShader from 'shader/PointShader.js';
@@ -144,7 +145,6 @@ import PointShader from 'shader/PointShader.js';
         return new Promise((resolve, reject) => {
             const mtlLoader = new MTLLoader();
             mtlLoader.load(
-                // fileName + '.mtl',
                 fileName,
                 (mtl) => {
                     const mapName = Object.keys(mtl.materialsInfo)[0];
@@ -239,7 +239,6 @@ import PointShader from 'shader/PointShader.js';
                 file_extension = ".jpg"
             } 
 
-            // const textureUrl = fileName + file_extension;
             const textureUrl = fileName[0];
             loadTextureAndConvertToArray(textureUrl, (pixelArray) => {
                 // set the histogram data for 2D and 3D rendering
@@ -257,7 +256,7 @@ import PointShader from 'shader/PointShader.js';
                 updateHistogram(histograms[0], mean, stdDev, props.view)
 
                 let colors_buf = new Float32Array(pixelArray)
-                // Entfernen jedes vierten Wertes aus colors_buf und Teilen der verbleibenden Werte durch 255
+                // Remove every fourth value from colors_buf and divide the remaining values by 255
                 const filteredColorsBuf = colors_buf
                     .filter((_, index) => (index + 1) % 4 !== 0)
                     .map(value => value / 255);

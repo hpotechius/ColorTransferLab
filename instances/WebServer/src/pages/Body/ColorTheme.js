@@ -1,5 +1,5 @@
 /*
-Copyright 2024 by Herbert Potechius,
+Copyright 2025 by Herbert Potechius,
 Technical University of Berlin
 Faculty IV - Electrical Engineering and Computer Science - Institute of Telecommunication Systems - Communication Systems Group
 All rights reserved.
@@ -17,6 +17,8 @@ export let color_palette = []
 /******************************************************************************************************************
  ******************************************************************************************************************
  ** FUNCTIONAL COMPONENT
+ **
+ ** ColorTheme Tab contains a field for 10 colors which can be chosen with a Color Picker
  ******************************************************************************************************************
  ******************************************************************************************************************/
 function ColorTheme(props) {
@@ -34,7 +36,8 @@ function ColorTheme(props) {
      **************************************************************************************************************/
 
     /**************************************************************************************************************
-     * 
+     * Creates the initial color picker button.
+     * The removal is only necessary if the component is re-rendered in development mode.
      **************************************************************************************************************/
     useEffect(() => {
         // remove all children
@@ -55,31 +58,28 @@ function ColorTheme(props) {
      **************************************************************************************************************/
     
     /**************************************************************************************************************
-     * 
+     * Adds a color to the color palette as a Button
      **************************************************************************************************************/
     function addColor(cp_btn, colorpick, ID){
+        console.log(ID)
         numcolors.current += 1
-        // console.log(colorpick.value)
         color_palette.push(colorpick.value)
-        // console.log(color_palette)
+
+        // Create color button
         $(cp_btn).html(colorpick.value)
         $(cp_btn).css("background-color", colorpick.value);
         $(cp_btn).css("color", "#FFFFFF");
         $(cp_btn).css("text-shadow", "0px 0px 5px #000000");
         $(colorpick).css("visibility", "hidden");
-
-
         $(cp_btn).data("active", "yes")
 
-        if(numcolors.current >= 20) {
-            return
-        }
-
-        createColorPickerButton(ID)
+        // If the maximum number of colors is reached, no color picker button is created
+        if(numcolors.current < 20)
+            createColorPickerButton(ID)
     }
 
     /**************************************************************************************************************
-     * 
+     * Removes the color Button by clicking on it.
      **************************************************************************************************************/
     function removeButton(cp_btn, ID) {
         if($(cp_btn).data("active") !== "no"){
@@ -98,9 +98,6 @@ function ColorTheme(props) {
                 i++;
             }
             color_palette = new_color_palette
-            console.log(color_palette)
-            // console.log($(cp_btn).html())
-            // color_palette
             if(numcolors.current >= 20) {
                 createColorPickerButton(ID)
             }
@@ -109,7 +106,8 @@ function ColorTheme(props) {
     }
 
     /**************************************************************************************************************
-     * 
+     * Creates the color Button with the chosen color.
+     * Left click on the button will remove the button.
      **************************************************************************************************************/
     function createColorPickerButton(ID) {
         var cp_btn = document.createElement("div")

@@ -1,5 +1,5 @@
 /*
-Copyright 2024 by Herbert Potechius,
+Copyright 2025 by Herbert Potechius,
 Technical University of Berlin
 Faculty IV - Electrical Engineering and Computer Science - Institute of Telecommunication Systems - Communication Systems Group
 All rights reserved.
@@ -10,9 +10,10 @@ Please see the LICENSE file that should have been included as part of this packa
 import React, {Suspense, useState, useEffect, useRef, useMemo} from 'react';
 import {OrbitControls, PerspectiveCamera, OrthographicCamera} from "@react-three/drei"
 import {Canvas} from "@react-three/fiber";
-import './ImageRenderer.scss';
 import $ from 'jquery';
 import * as THREE from "three";
+
+import './ImageRenderer.scss';
 import Axes from "rendering/Axes"
 import RendererButton from './RendererButton';
 import SettingsField from './SettingsField';
@@ -20,7 +21,6 @@ import SettingsFieldItem from './SettingsFieldItem';
 import InfoField from './InfoField';
 import Image from 'rendering/Image';
 import PointShader from 'shader/PointShader.js';
-import { WebRTCConnection } from 'Utils/System';
 
 
 /******************************************************************************************************************
@@ -38,26 +38,23 @@ function ImageRenderer(props) {
     const [isFieldInfoVisible, setIsFieldInfoVisible] = useState(false);
     const [update, setUpdate] = useState(0);
     const [info, setInfo] = useState({});
-
     const [grid, changeGrid] = useState(<gridHelper args={[20,20, 0x222222, 0x222222]}/>)
     const [axis, changeAxis] = useState(<Axes />)
     const [camera, setCamera] = useState(null);
     const [perspectiveView, setPerspectiveView] = useState(true)
-
-    const vertexPointShader = PointShader.vertexShader
-    const fragmentPointShader = PointShader.fragmentShader
 
     const imageRef = useRef(null);
     const isImageVisible = useRef(true);
     const isCanvasVisible = useRef(false);
     const isHistoVisible = useRef(false);
     const isDistVisible = useRef(false);
-
     const refPoints = useRef(null);
+
+    const vertexPointShader = PointShader.vertexShader
+    const fragmentPointShader = PointShader.fragmentShader
 
     const button_settings_texture_icon = "assets/icons/icon_settings_grey.png";
     const button_infos_texture_icon = "assets/icons/icon_information.png"
-
 
     /**************************************************************************************************************
      **************************************************************************************************************
@@ -65,19 +62,6 @@ function ImageRenderer(props) {
      **************************************************************************************************************
      **************************************************************************************************************/
 
-    /**************************************************************************************************************
-     * 
-     **************************************************************************************************************/
-    // useFrame(() => {
-    //     if(refPoints.current) {
-    //         //refPoints.current.material.uniforms.pointsize = {value: state.pointsize}
-    //         refPoints.current.material.uniforms.pointsize = {value: 1.0}
-    //     }
-    // })
-
-    useEffect(() => {
-        
-    }, []);
     /**************************************************************************************************************
      * 
      **************************************************************************************************************/
@@ -114,7 +98,7 @@ function ImageRenderer(props) {
     )
 
     /**************************************************************************************************************
-     * 
+     * Switch between perspective and orthographic view
      **************************************************************************************************************/
     useEffect(() => {
         if (perspectiveView) {
@@ -131,15 +115,18 @@ function ImageRenderer(props) {
      **************************************************************************************************************/
 
     /**************************************************************************************************************
-     * 
+     * Shows the settings for the image view:
+     * (1) Greyscale
      **************************************************************************************************************/
     const showSettings = () => {
-        console.log("showSettings")
         setIsFieldSettingVisible(!isFieldSettingVisible);
     };
 
     /**************************************************************************************************************
-     * 
+     * Show the object information:
+     * (1) Width
+     * (2) Height
+     * (3) Depth
      **************************************************************************************************************/
     const showObjectInfo = (e) => {
         setIsFieldInfoVisible(!isFieldInfoVisible);
@@ -147,13 +134,14 @@ function ImageRenderer(props) {
     }
 
     /**************************************************************************************************************
-     * 
+     * Makes the image greyscale or colored again.
      **************************************************************************************************************/
     const handleGreyscaleChange = (e) => {
         $(`#${props.innerid}`).css('filter', e.target.checked ? 'grayscale(100%)' : 'none');
     }
+
     /**************************************************************************************************************
-     * 
+     * Switches between the image view and the color distribution view.
      **************************************************************************************************************/
     const switchColorDistribution = () => {
         isDistVisible.current = !isDistVisible.current;
@@ -168,7 +156,7 @@ function ImageRenderer(props) {
     }
 
     /**************************************************************************************************************
-     * 
+     * Switches between the image view and the 3D color histogram view.
      **************************************************************************************************************/
     const switchColorHistogram = () => {
         isHistoVisible.current = !isHistoVisible.current;
@@ -183,24 +171,12 @@ function ImageRenderer(props) {
     }
 
     /**************************************************************************************************************
-     * 
+     * Changes the point size of the color distribution view.
      **************************************************************************************************************/
     const handlePointSizeChange = (e) => {
         refPoints.current.material.uniforms.pointsize = {value: e.target.value}
         setUpdate(Math.random())
     }
-
-    // const switchDefault = () => {
-    //     console.log("switchDefault")
-    //     isHistoVisible.current = false;
-    //     isDistVisible.current = false;
-    //     isImageVisible.current = false;
-    //     isCanvasVisible.current = false;
-    //     console.log($("#view_empty_" + props.view))
-    //     $("#view_empty_" + props.view).css("display", "block");
-    //     setUpdate(Math.random())
-
-    // }
 
     /**************************************************************************************************************
      **************************************************************************************************************
@@ -219,11 +195,8 @@ function ImageRenderer(props) {
                 <RendererButton onClick={switchColorHistogram} src={"assets/icons/icon_histogram_grey.png"}/>
                 {/* Button for switching between mesh view and the color dostribution view */}
                 <RendererButton onClick={switchColorDistribution} src={"assets/icons/icon_dist_grey.png"}/>
-                {/* Button for showing the deafault view */}
-                {/* <RendererButton onClick={switchDefault} src={"assets/icons/icon_x.png"}/> */}
             </div>
 
-            
             {/* Canvas for rendering the color distribution */}
             <Canvas 
                 id={props.id} 

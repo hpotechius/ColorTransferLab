@@ -1,5 +1,5 @@
 /*
-Copyright 2024 by Herbert Potechius,
+Copyright 2025 by Herbert Potechius,
 Technical University of Berlin
 Faculty IV - Electrical Engineering and Computer Science - Institute of Telecommunication Systems - Communication Systems Group
 All rights reserved.
@@ -9,10 +9,10 @@ Please see the LICENSE file that should have been included as part of this packa
 
 import React, {useEffect, useState, useRef} from 'react';
 import {OrbitControls, PerspectiveCamera, OrthographicCamera} from "@react-three/drei";
+
 import CustomCanvas from 'rendering/CustomCanvas';
 import Axes from "rendering/Axes"
 import './MeshRenderer.scss';
-import {pathjoin} from 'Utils/Utils';
 import {active_server} from 'Utils/System'
 import TriangleMesh from "rendering/TriangleMesh"
 import PointCloud from "rendering/PointCloud"
@@ -25,16 +25,18 @@ import InfoField from './InfoField';
 /******************************************************************************************************************
  ******************************************************************************************************************
  ** FUNCTIONAL COMPONENT
+ ** 
+ ** MeshRenderer for rendering a mesh, point cloud or volumetric video.
  ******************************************************************************************************************
  ******************************************************************************************************************/
 const MeshRenderer = (props) => {    
-    const { id, filePath, setComplete, renderBarID, view, obj_type } = props;
-
     /**************************************************************************************************************
      **************************************************************************************************************
      ** STATES & REFERENCES & VARIABLES
      **************************************************************************************************************
      **************************************************************************************************************/
+    const { id, filePath, setComplete, renderBarID, view, obj_type } = props;
+
     const [grid, changeGrid] = useState(<gridHelper args={[20,20, 0x222222, 0x222222]}/>)
     const [axis, changeAxis] = useState(<Axes />)
     const [camera, setCamera] = useState(null);
@@ -43,21 +45,16 @@ const MeshRenderer = (props) => {
     const [isFieldInfoVisible, setIsFieldInfoVisible] = useState(false);
     const [isTextureMapVisible, setIsTextureMapVisible] = useState(false);
     const [fps, setFps] = useState(1);
+    const [info, setInfo] = useState({});
+
     // If the volumetric video ist stopped the fps has to be set to 60 in order use the forward and backward function
     // properly. The original fps value is saved in savedFps.
     const savedFps = useRef(1);
-
-    const [info, setInfo] = useState({});
-
-    //const info = useRef({});
-
     const voluPlay = useRef(true);
     const voluForward = useRef(false);
     const voluBackward = useRef(false);
-
     const pointCloudRef = useRef();
     const meshRef = useRef();
-
     const currentIndex = useRef(0);
     const activeObject = useRef([]);
     const activeObjectRefs = useRef([]);
@@ -96,7 +93,6 @@ const MeshRenderer = (props) => {
                             setGLOComplete={props.setComplete}
                         />
 
-            // const texture_path = pathjoin(filePath + ".png");
             const texture_path = filePath[0]
 
             activeObject.current.length = 0;
@@ -151,16 +147,10 @@ const MeshRenderer = (props) => {
             activeObjectRefs.current.length = 0;
             props.setComplete(Math.random())
         }
-
-        // else if(obj_type === "Image") {
-        //     activeObject.current.length = 0;
-        //     activeObjectRefs.current.length = 0;
-        // }
-
     }, [filePath, obj_type, renderBarID, setComplete ]);
 
     /**************************************************************************************************************
-     * 
+     * Changes the camera view from perspective to orthographic and vice versa.
      **************************************************************************************************************/
     useEffect(() => {
         if (perspectiveView) {
@@ -177,7 +167,7 @@ const MeshRenderer = (props) => {
      **************************************************************************************************************/
 
     /**************************************************************************************************************
-     * 
+     * Changes the grid visibility.
      **************************************************************************************************************/
     const handleGridChange = (e) => {
         if (e.target.checked) {
@@ -188,7 +178,7 @@ const MeshRenderer = (props) => {
     };
 
     /**************************************************************************************************************
-     * 
+     * Changes the axis visibility.
      **************************************************************************************************************/
     const handleAxisChange = (e) => {
         if (e.target.checked) {
@@ -199,7 +189,7 @@ const MeshRenderer = (props) => {
     };
 
     /**************************************************************************************************************
-     * 
+     * Changes the point size of point cloud and the color distributions.
      **************************************************************************************************************/
     const handlePointSizeChange = (e) => {
         if (obj_type === "Mesh") {
@@ -216,11 +206,10 @@ const MeshRenderer = (props) => {
     }
 
     /**************************************************************************************************************
-     * 
+     * Switches between orthographic and perspective view.
      **************************************************************************************************************/
     const handleOrthographicViewChange = (e) => {
         setPerspectiveView(!e.target.checked)
-        
     };
 
     /**************************************************************************************************************
@@ -231,7 +220,7 @@ const MeshRenderer = (props) => {
     };
 
     /**************************************************************************************************************
-     * 
+     * Renders the normals of the faces of the mesh or the normals of the vertices of the point cloud.
      **************************************************************************************************************/
     const handleVertexNormalViewChange = (e) => {
         console.log("handleVertexNormalViewChange")
@@ -243,7 +232,14 @@ const MeshRenderer = (props) => {
     }
 
     /**************************************************************************************************************
-     * 
+     * Show the settings for the mesh / pointcloud / volumetric video view.
+     * (1) Show Grid
+     * (2) Show Axes
+     * (3) Orthographic View
+     * (4) Point Size
+     * (5) WireFrame (mesh / volumetric video only)
+     * (6) Vertex Normal View
+     * (7) FPS (volumetric video only)
      **************************************************************************************************************/
     const showSettings = () => {
         setIsFieldSettingVisible(!isFieldSettingVisible);
@@ -253,7 +249,7 @@ const MeshRenderer = (props) => {
     };
 
     /**************************************************************************************************************
-     * 
+     * Show the texture map of the mesh.
      **************************************************************************************************************/
     const showTextureMap = () => {
         console.log("showTextureMap")
@@ -261,7 +257,7 @@ const MeshRenderer = (props) => {
     }
 
     /**************************************************************************************************************
-     * 
+     * Switches between the color distribution view and the mesh view.
      **************************************************************************************************************/
     const switchColorDistribution = () => {
         if (obj_type === "Mesh") {
@@ -291,7 +287,7 @@ const MeshRenderer = (props) => {
     }
 
     /**************************************************************************************************************
-     * 
+     * Switches between the 3D color histogram view and the mesh view.
      **************************************************************************************************************/
     const switchColorHistogram = () => {
         if (obj_type === "Mesh") {
@@ -318,11 +314,10 @@ const MeshRenderer = (props) => {
                 });
             }
         }
-
     }
 
     /**************************************************************************************************************
-     * 
+     * Show wireframe of the mesh.
      **************************************************************************************************************/
     const handleWireFrameChange = (e) => {
         console.log(e.target.checked)
@@ -345,7 +340,7 @@ const MeshRenderer = (props) => {
     }
     
     /**************************************************************************************************************
-     * 
+     * Show face normals of the mesh.
      **************************************************************************************************************/
     const handleFaceNormal = (e) => {
         console.log(e.target.checked)
@@ -356,30 +351,25 @@ const MeshRenderer = (props) => {
     }
 
     /**************************************************************************************************************
-     * 
+     * Show Object information of the mesh.
+     * (1) Number of vertices
+     * (2) Number of faces
+     * or the point cloud view.
+     * (1) Number of vertices
      **************************************************************************************************************/
     const showInfo = () => {
         setIsFieldInfoVisible(!isFieldInfoVisible);
-
-        console.log(info)
-
         // Hide the settings field if the info field is visible
         // Note that isFieldInfoVisible has to be false, because the state is not updated immediately
         if(!isFieldInfoVisible)
             setIsFieldSettingVisible(false)
-
-        // if (props.obj_type === "Mesh") {
-        //     setInfo(meshRef.current.getState().info);
-        // } else if (props.obj_type === "PointCloud") {
-        //     setInfo(pointCloudRef.current.getState().info);
-        // }
     }
 
     /**************************************************************************************************************
-     * 
+     * Plays / Stops the volumetric video.
      **************************************************************************************************************/
     const playStopVolumetricVideo = () => {
-        console.log("playStopVolumetricVideo")
+        console.debug("%c[INFO] Play/Stop volumetric video", "color: orange;")
         if(!voluPlay.current) {
             setFps(savedFps.current)
         } else {
@@ -391,62 +381,19 @@ const MeshRenderer = (props) => {
     }
 
     /**************************************************************************************************************
-     * 
+     * Moves to the next frame of the volumetric video.
      **************************************************************************************************************/
     const forwardVolumetricVideo = () => {
-        console.log("forwardVolumetricVideo")
+        console.debug("%c[INFO] Load next frame of volumetric video", "color: orange;")
         voluForward.current = true;
     }
 
+    /**************************************************************************************************************
+     * Moves to the previous frame of the volumetric video.
+     **************************************************************************************************************/
     const backwardVolumetricVideo = () => {
-        console.log("backwardVolumetricVideo")
+        console.debug("%c[INFO] Load previous frame of volumetric video", "color: orange;")
         voluBackward.current = true;
-    }
-
-    const downloadObject = () => {
-        console.log("downloadObject")
-        if (props.obj_type === "Mesh") {
-            const file_name = filePath.split("/").pop() + ".zip";
-            const folder_path  = "ColorTransferLab/" + filePath.split("/").slice(0, -1).join("/");
-            const file_path = folder_path + "/" + file_name;
-
-            // Verwende die aktuelle Adresse, wenn active_server leer ist
-            let base_url = active_server === "" ? window.location.origin : active_server;
-            // Erstelle die vollständige URL
-            const url = new URL(file_path, base_url).href;
-            console.log(url)
-
-            // Funktion zum Herunterladen der Datei
-            async function downloadFile(url, fileName) {
-                try {
-                    const response = await fetch(url);
-                    if (!response.ok) {
-                        throw new Error(`Fehler beim Herunterladen der Datei: ${response.statusText}`);
-                    }
-                    const blob = await response.blob();
-                    const link = document.createElement('a');
-                    link.href = URL.createObjectURL(blob);
-                    link.download = fileName;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                } catch (error) {
-                    console.error('Fehler beim Herunterladen der Datei:', error);
-                }
-            }
-
-            // Beispielaufruf
-            downloadFile(url, "File.zip");
-        }
-        else if(props.obj_type === "PointCloud") {
-            const a = document.createElement("a");
-            a.href = filePath;
-            a.download = "pointcloud.ply"; // Sie können den Dateinamen hier anpassen
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        }
-        
     }
 
     /**************************************************************************************************************
@@ -479,8 +426,6 @@ const MeshRenderer = (props) => {
                 <RendererButton onClick={switchColorDistribution} src={button_settings_dist_icon}/>
                 {/* Button for showing the settings for the mesh view */}
                 <RendererButton onClick={showSettings} src={button_settings_texture_icon}/>
-                {/* Button for showing the settings for the mesh view */}
-                {/* <RendererButton onClick={downloadObject} src={"assets/icons/icon_export_metric.png"}/> */}
             </div>
 
             {/* Framenumber counter */}
@@ -556,8 +501,6 @@ const MeshRenderer = (props) => {
             <InfoField visibility={isFieldInfoVisible}>
                 {info}
             </InfoField>
-
-
         </div>
     )
 };

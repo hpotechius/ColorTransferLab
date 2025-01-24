@@ -1,5 +1,5 @@
 /*
-Copyright 2024 by Herbert Potechius,
+Copyright 2025 by Herbert Potechius,
 Technical University of Berlin
 Faculty IV - Electrical Engineering and Computer Science - Institute of Telecommunication Systems - Communication Systems Group
 All rights reserved.
@@ -13,11 +13,18 @@ import * as THREE from 'three'
 
 /******************************************************************************************************************
  ******************************************************************************************************************
- ** - creates three colored axes for visualizing the coordinatesystem's axes
- ** - the axes are shifted a little in y direction to prevent overlapping with the grid
+ ** FUNCTIONAL COMPONENT
+ ** 
+ ** Creates three colored axes for visualizing the coordinatesystem's axes.
+ ** The axes are shifted a little in y direction to prevent overlapping with the grid.
  ******************************************************************************************************************
  ******************************************************************************************************************/
 const Axes = () => {
+    /**************************************************************************************************************
+     **************************************************************************************************************
+     ** STATES & REFERENCES & VARIABLES
+     **************************************************************************************************************
+     **************************************************************************************************************/
     const pointsRed = []
     pointsRed.push(new THREE.Vector3(0, 0.001, 0))
     pointsRed.push(new THREE.Vector3(4, 0.001, 0))
@@ -33,6 +40,11 @@ const Axes = () => {
     pointsBlue.push(new THREE.Vector3(0, 0.001, 4))
     const lineGeometryBlue = new THREE.BufferGeometry().setFromPoints(pointsBlue)
   
+    /**************************************************************************************************************
+     **************************************************************************************************************
+     ** RENDERING
+     **************************************************************************************************************
+     **************************************************************************************************************/
     return (
         <>
             <line geometry={lineGeometryGreen}>
@@ -44,7 +56,6 @@ const Axes = () => {
             <line geometry={lineGeometryBlue}>
                 <lineBasicMaterial attach="material" color={'#0000FF'} linewidth={1} linecap={'round'} linejoin={'round'} />
             </line>
-
         </>
     )
 }

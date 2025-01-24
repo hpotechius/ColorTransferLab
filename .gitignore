@@ -4,6 +4,8 @@ instances/WebServer/package-lock.json
 instances/WebServer/public/data/
 instances/WebServer/public/previews/
 
+instances/SignalingServer/connections.db
+
 instances/ComputeNode/data/
 instances/ComputeNode/previews/
 instances/ComputeNode/files/data/

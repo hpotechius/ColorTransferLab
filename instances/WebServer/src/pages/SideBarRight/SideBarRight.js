@@ -1,5 +1,5 @@
 /*
-Copyright 2024 by Herbert Potechius,
+Copyright 2025 by Herbert Potechius,
 Technical University of Berlin
 Faculty IV - Electrical Engineering and Computer Science - Institute of Telecommunication Systems - Communication Systems Group
 All rights reserved.
@@ -8,12 +8,11 @@ Please see the LICENSE file that should have been included as part of this packa
 */
 
 import React, { useState, useEffect } from "react";
-// import Settings from './Settings'
-import Server from './Server'
+
 import Database from './Database'
 import Items from './Items'
 import './SideBarRight.scss';
-import DatabaseServer from "./DatabaseServer";
+import ComputeNode from "./ComputeNode";
 
 
 /******************************************************************************************************************
@@ -34,14 +33,6 @@ function SideBarRight(props) {
      ** HOOKS
      **************************************************************************************************************
      **************************************************************************************************************/
-
-    /**************************************************************************************************************
-     * Defines the maximum width of the mobile device.
-     * This value is read from the CSS variable "--mobile-max-width" in the settings/Global.scss file.
-     **************************************************************************************************************/
-    useEffect(() => {
-
-    }, []);
 
     /**************************************************************************************************************
      * Update the style of the sidebarright component depending on the window width.
@@ -83,9 +74,7 @@ function SideBarRight(props) {
         <div id="SideBarRight_sidebarright" style={componentStyle}>  
             <Database/> 
             <Items/> 
-            <DatabaseServer/>
-            {/* <Server/> */}
-            {/* <Settings setSingleView={props.setSingleView}/> */}
+            <ComputeNode/>
         </div>
     );
   }

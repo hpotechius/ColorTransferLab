@@ -1,5 +1,5 @@
 /*
-Copyright 2024 by Herbert Potechius,
+Copyright 2025 by Herbert Potechius,
 Technical University of Berlin
 Faculty IV - Electrical Engineering and Computer Science - Institute of Telecommunication Systems - Communication Systems Group
 All rights reserved.
@@ -9,25 +9,20 @@ Please see the LICENSE file that should have been included as part of this packa
 
 import React, { useState, useEffect } from "react";
 import $ from 'jquery';
+
 import Histogram from './Histogram';
 import Evaluation from './Evaluation';
 import Terminal from './Terminal';
 import Configuration from './Configuration';
 import Information from './Information';
-import {consolePrint} from 'Utils/Utils'
-import {evalPrint, exportMetrics} from 'Utils/Utils'
-import {server_post_request2} from 'Utils/Connection';
-import {pathjoin, getRandomID} from 'Utils/Utils';
-import {active_server} from 'Utils/System'
-import {showView} from 'pages/Body/Renderer'
+import {evalPrint, exportMetrics, pathjoin, getRandomID, consolePrint} from 'Utils/Utils'
 import {active_reference} from "pages/Body/Body"
 import {color_palette} from "pages/Body/ColorTheme"
-//import {request_database_content} from "pages/SideBarRight/Database"
 import TabButton from './TabButton';
-import './Console.scss';
 import ExecutionButton from "./ExecutionButton";
-import {execution_data} from 'Utils/System'
-import {WebRTCConnection} from 'Utils/System';
+import {execution_data, WebRTCConnection} from 'Utils/System'
+import './Console.scss';
+
 
 /******************************************************************************************************************
  ******************************************************************************************************************
@@ -73,10 +68,6 @@ function Console() {
             }
         };
 
-        // WebRTCConnection.onResponseOutputChange = (value) => {
-        //     console.debug('%c[INFO] Callback function executed because Variable "responseOutput" in WebRTCConnection has changed to:', "color: orange;", value);
-        // }
-
         updateComponentStyle();
         window.addEventListener('resize', updateComponentStyle);
 
@@ -92,34 +83,6 @@ function Console() {
      ** FUNCTIONS
      **************************************************************************************************************
      **************************************************************************************************************/
-
-    /**************************************************************************************************************
-     * 
-     **************************************************************************************************************/
-    // const apply_color_transfer = (data, parameters) => {
-    //     let stat_obj = data
-    //     let rankey = parameters
-    //     console.log(stat_obj)
-
-    //     var isTrueSet = (stat_obj["enabled"] === 'true');
-
-    //     if(!isTrueSet) {
-    //         showView("renderer_imagerenderer_out", "renderer_canvasrenderer_out", "3D")
-    //         consolePrint("ERROR", stat_obj["data"]["message"])
-    //     }
-    //     else {
-    //         var output_extension = stat_obj["data"]["extension"]
-    //         let renderer_image_inner = $("#renderer_image_innerrenderer_out")
-    //         if(output_extension === "ply" || output_extension === "png" || output_extension === "mp4")
-    //             renderer_image_inner.attr("data-src", pathjoin(active_server,"data", "Output", rankey + "." + output_extension))
-    //         else if(output_extension === "obj")
-    //             renderer_image_inner.attr("data-src", pathjoin(active_server,"data", "Output", "$mesh$" + rankey , rankey + "." + output_extension))
-    //         else if(output_extension === "volu")
-    //             renderer_image_inner.attr("data-src", pathjoin(active_server,"data", "Output", "$volumetric$" + rankey , rankey + "." + output_extension))
-            
-    //         renderer_image_inner.attr("data-update", getRandomID())
-    //     }
-    // }
 
     /**************************************************************************************************************
      * Sends a request to the server to apply the selected color transfer algorithm.
@@ -175,7 +138,6 @@ function Console() {
             }
             console.debug("%c[SEND] WebRTC Request to Database: Apply Color Transfer:", "color: lightgreen;", out_dat)
             WebRTCConnection.sendMessage(JSON.stringify(out_dat))
-            // server_post_request2(active_server, "color_transfer", out_dat, apply_color_transfer, rankey)
         } else {
             consolePrint("WARNING", "Input selection incomplete or no color transfer approach selected")
         }

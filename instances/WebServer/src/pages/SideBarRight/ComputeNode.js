@@ -10,30 +10,76 @@ Please see the LICENSE file that should have been included as part of this packa
 import React, {useState, useEffect} from "react";
 import $ from 'jquery';
 
-import './Header.scss';
+import {consolePrint} from 'Utils/Utils'
+import {WebRTCConnection} from 'Utils/System';
+import './ComputeNode.scss';
+
+
+/******************************************************************************************************************
+ ******************************************************************************************************************
+ ** EXPORTED FUNCTIONS
+ ******************************************************************************************************************
+ ******************************************************************************************************************/
+
+/******************************************************************************************************************
+ * Create the buttons for the compute nodes
+ ******************************************************************************************************************/
+export const createServerButtons = (stat_obj) => {
+    const icon_availability_yes = "assets/icons/icon_availability_yes.png";
+    const icon_availability_no = "assets/icons/icon_availability_no.png";
+
+    $("#dbserver_body").html("")
+    for (let key in stat_obj) {
+        let elem = stat_obj[key];
+        var d = document.createElement('div');
+
+        $(d).addClass("tooltip dbserver_item").attr("title", elem["sid"]).appendTo($("#dbserver_body"))
+
+        var d_icon = document.createElement('img');
+        if (elem["status"] === "Idle")
+            $(d_icon).addClass("dbserver_item_icon").attr("src", icon_availability_yes).appendTo($(d))
+        else if (elem["status"] === "Busy")
+            $(d_icon).addClass("dbserver_item_icon").attr("src", icon_availability_no).appendTo($(d))
+
+        var d_text = document.createElement('div');
+        $(d_text).addClass("dbserver_item_text").html(elem["name"]).appendTo($(d))
+
+        $(d).on("click", function(){
+            if (elem["status"] === "Idle") {
+                console.debug("%c[INFO] Create offer for selected Database:", "color: orange", elem)
+                WebRTCConnection.createOffer(key)
+            }
+            else if (elem["status"] === "Busy") {
+                console.debug("%c[INFO] Database is already connected with a client", "color: orange", elem)
+                consolePrint("WARNING", "Database is busy. Either you are already connected or the database is in use.")
+            }
+
+            if (window.innerWidth < 1000) {
+                $("#dbserver_main").css("display", "none")
+                $("#database_main").css("display", "block")
+            }
+        });
+    }
+}
 
 
 /******************************************************************************************************************
  ******************************************************************************************************************
  ** FUNCTIONAL COMPONENT
- **
- ** Defined the header of the webpage containing a clickable logo which redirects to the page 
- ** https://potechius.com, the title of the webpage (with the version number), the version number of the app and 
- ** a button which redirects to the github page of the app.
  ******************************************************************************************************************
  ******************************************************************************************************************/
-function Header(props) {
+function ComputeNode(props) {
     /**************************************************************************************************************
      **************************************************************************************************************
      ** STATES & REFERENCES & VARIABLES
      **************************************************************************************************************
      **************************************************************************************************************/
     const [componentStyle, setComponentStyle] = useState({});
-    const logo_header = "assets/logo.png";
-    const icon_menu_button = "assets/icons/icon_menu.png";
-    const icon_github_button = "assets/icons/icon_github.png";
-    const title_header = "ColorTransferLabV2";
-    const version_header = "v 1.0.0"
+    const [mobileMaxWidth, setMobileMaxWidth] = useState(null);
+
+    const icon_server = "assets/icons/icon_server_grey.png";
+    const icon_forward = "assets/icons/icon_arrow_right.png";
+
 
     /**************************************************************************************************************
      **************************************************************************************************************
@@ -42,14 +88,17 @@ function Header(props) {
      **************************************************************************************************************/
 
     /**************************************************************************************************************
-     *
+     * Update the style of the console component depending on the window width.
      **************************************************************************************************************/
     useEffect(() => {
         const styles = getComputedStyle(document.documentElement);
         const mobileMaxWidth = String(styles.getPropertyValue('--mobile-max-width')).trim();
+        setMobileMaxWidth(String(styles.getPropertyValue('--mobile-max-width')).trim());
+
         const updateComponentStyle = () => {
             if (window.innerWidth < mobileMaxWidth) {
-                setComponentStyle({ display: "block"});
+                setComponentStyle({display: "none", width: "calc(100% - 6px)", top: "0px", height: "calc(100% - 6px)"});
+                
             } else {
                 setComponentStyle({});
             }
@@ -63,6 +112,12 @@ function Header(props) {
         };
     }, []);
 
+
+    let forwardButtonStyle = {};
+    if (window.innerWidth < mobileMaxWidth) {
+        forwardButtonStyle = {display:"block"}
+    }
+
     /**************************************************************************************************************
      **************************************************************************************************************
      ** FUNCTIONS
@@ -70,18 +125,13 @@ function Header(props) {
      **************************************************************************************************************/
 
     /**************************************************************************************************************
-     * Toogles the menu of the webpage. Menu button is only visible on mobile devices.
+     * Info: the corresponing button is only shown in mobile mode
+     * Hide the database server window and show the database window
      **************************************************************************************************************/
-    function toogleMenu() {
-        if ($("#body_menu").css("display") === "none") {
-            $("#body_menu").css("display", "block")
-        } else {
-            $("#body_menu").css("display", "none")
-        }
-    }
-
-    function openFeedback() {
-        $("#feedback-container").css("display", "block");
+    function forwardToDatabase() {
+        $("#database_main").css("display", "block")
+        $("#dbserver_main").css("display", "none")
+        $("#body_preview").css("display", "none")
     }
 
     /**************************************************************************************************************
@@ -90,29 +140,17 @@ function Header(props) {
      **************************************************************************************************************
      **************************************************************************************************************/
     return (
-        <header id='Header_header'>
-            <a href="https://potechius.com" target="_blank" rel="noreferrer">
-                <img id="Header_logo" src={logo_header} alt=""/>
-            </a>
-            <div id="Header_text" >{title_header}</div>
-            <div id="header_version">{version_header}</div>
-
-
-            <div id="header-container">
-                <div id="Header_feedback" onClick={openFeedback} >
-                    Feedback
-                </div>
-
-                <a id="Header_github" href="https://github.com/ImmersiveMediaLaboratory/ColorTransferLab" target="_blank" rel="noreferrer">
-                    <img id="Header_github_logo" src={icon_github_button} alt=""/>
-                </a>
-
-                <div id="Header_menu" style={componentStyle}> 
-                    <img id="Header_menu_logo" onClick={toogleMenu} src={icon_menu_button} alt=""/>
+        <div id="dbserver_main" style={componentStyle}>
+            <div id="dbserver_header">
+                <img id='dbserver_header_logo' src={icon_server} alt=""/>
+                <div id='dbserver_header_name'>COMPUTE NODE</div>
+                <div id='dbserver_forward_button' onClick={forwardToDatabase} style={forwardButtonStyle}>
+                    <img id="dbserver_forward_icon" src={icon_forward}/>
                 </div>
             </div>
-        </header>
+            <div id="dbserver_body"/>
+        </div>
     );
 }
 
-export default Header;
+export default ComputeNode;

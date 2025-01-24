@@ -1,5 +1,5 @@
 /*
-Copyright 2024 by Herbert Potechius,
+Copyright 2025 by Herbert Potechius,
 Technical University of Berlin
 Faculty IV - Electrical Engineering and Computer Science - Institute of Telecommunication Systems - Communication Systems Group
 All rights reserved.
@@ -9,6 +9,7 @@ Please see the LICENSE file that should have been included as part of this packa
 
 import React, {useState, useEffect} from 'react';
 import $ from 'jquery';
+
 import Header from './../Header/Header'
 import Footer from './../Footer/Footer'
 import SideBarLeft from '../SideBarLeft/SideBarLeft';
@@ -21,6 +22,12 @@ import {WebRTCConnection, setWebRTCConnection} from 'Utils/System';
 /******************************************************************************************************************
  ******************************************************************************************************************
  ** FUNCTIONAL COMPONENT
+ **
+ ** Area between Header and Footer. Contains the main content of the page:
+ ** (1) SideBar-Left: Algorithms, Settings
+ ** (2) SideBar-Right: Database, Items, Compute Node
+ ** (3) Body: Renderer
+ ** (4) Console
  ******************************************************************************************************************
  ******************************************************************************************************************/
 function Main() {
@@ -94,10 +101,7 @@ function Main() {
             message: feedbackArea2
         };
 
-        console.log(feedback);
-
-        // server_post_feedback(RelayServer, "feedback", feedback)
-        console.debug("%c[SEND] WebRTC Request to Server: Send feeback via command /feedback", "color: light green");
+        console.debug("%c[SEND] WebRTC Request to Server: Send feeback via command /feedback", "color: lightgreen");
         WebRTCConnection.sendServerMessage("feedback", feedback)
 
         setErrorMessage('');
@@ -105,7 +109,7 @@ function Main() {
         setTimeout(() => {
             setFeedbackSent(false);
             document.getElementById('feedback-container').style.display = 'none';
-        }, 2000); // Overlay wird nach 2 Sekunden ausgeblendet
+        }, 2000); // Overlay for 2 seconds
     };
 
     /**************************************************************************************************************

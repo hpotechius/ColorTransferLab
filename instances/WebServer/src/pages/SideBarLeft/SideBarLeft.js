@@ -1,5 +1,5 @@
 /*
-Copyright 2024 by Herbert Potechius,
+Copyright 2025 by Herbert Potechius,
 Technical University of Berlin
 Faculty IV - Electrical Engineering and Computer Science - Institute of Telecommunication Systems - Communication Systems Group
 All rights reserved.
@@ -8,6 +8,7 @@ Please see the LICENSE file that should have been included as part of this packa
 */
 
 import React, {useState, useEffect} from "react";
+
 import Algorithms from './Algorithms'
 import Settings from './Settings'
 import './SideBarLeft.scss';
@@ -16,10 +17,10 @@ import './SideBarLeft.scss';
 /******************************************************************************************************************
  ******************************************************************************************************************
  ** FUNCTIONAL COMPONENT
- ** Contains tabs for the following module classes:
- ** (1) Color Transfer
- ** (2) Style Transfer
- ** (3) Colorization
+ **
+ ** Contains the following two components:
+ ** (1) Algorithms
+ ** (2) Settings
  ******************************************************************************************************************
  ******************************************************************************************************************/
 function SideBarLeft(props) {
@@ -66,7 +67,6 @@ function SideBarLeft(props) {
     return (
         <div className="sidebarleft" style={componentStyle}>  
             <Algorithms/> 
-            {/* <Server/> */}
             <Settings setSingleView={props.setSingleView}/>
         </div>
     );

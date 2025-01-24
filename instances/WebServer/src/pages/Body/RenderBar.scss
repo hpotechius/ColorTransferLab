@@ -1,49 +1,52 @@
+/*
+Copyright 2025 by Herbert Potechius,
+Technical University of Berlin
+Faculty IV - Electrical Engineering and Computer Science - Institute of Telecommunication Systems - Communication Systems Group
+All rights reserved.
+This file is released under the "MIT License Agreement".
+Please see the LICENSE file that should have been included as part of this package.
+*/
+
 .renderbar {
-    //display: flex;
-    //justify-content: space-between;
-    //align-items: center;
-    //padding: 0 20px;
     width: 100%;
     position: absolute;
     height: 10px;
     bottom: 0;
-    // background-color: #249118;
     background-color: black;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     z-index: 9999;
-
     display: none;
     font-size: 10px;
     color: white;
-    justify-content: center; /* Zentriert den Text horizontal */
-    align-items: center; /* Zentriert den Text vertikal */
-    text-align: center; /* Zentriert den Text innerhalb des flex-Elements */
+    justify-content: center;
+    align-items: center;
+    text-align: center;
 }
 
 .renderbar_download {
     display: flex;
-    justify-content: center; /* Zentriert den Inhalt horizontal */
-    align-items: center; /* Zentriert den Inhalt vertikal */
+    justify-content: center;
+    align-items: center;
     width: 0%;
     position: absolute;
     height: 10px;
     background-color: #249118;
-    left: 0; /* Positioniert das Element am linken Rand */
-    right: 0; /* Positioniert das Element am rechten Rand */
-    margin-right: auto; /* Zentriert das Element horizontal */
+    left: 0;
+    right: 0;
+    margin-right: auto;
 }
 
 .renderbar_processing {
     display: flex;
-    justify-content: center; /* Zentriert den Inhalt horizontal */
-    align-items: center; /* Zentriert den Inhalt vertikal */
+    justify-content: center;
+    align-items: center;
     width: 0%;
     position: absolute;
     height: 10px;
     background-color: #241891;
-    left: 0; /* Positioniert das Element am linken Rand */
-    right: 0; /* Positioniert das Element am rechten Rand */
-    margin-right: auto; /* Zentriert das Element horizontal */
+    left: 0;
+    right: 0;
+    margin-right: auto;
 }
 
 .renderbar_text {

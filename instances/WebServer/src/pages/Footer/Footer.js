@@ -1,5 +1,5 @@
 /*
-Copyright 2024 by Herbert Potechius,
+Copyright 2025 by Herbert Potechius,
 Technical University of Berlin
 Faculty IV - Electrical Engineering and Computer Science - Institute of Telecommunication Systems - Communication Systems Group
 All rights reserved.
@@ -14,6 +14,7 @@ import './Footer.scss';
 /******************************************************************************************************************
  ******************************************************************************************************************
  ** FUNCTIONAL COMPONENT
+ **
  ** Defined the footer of the webpage containing the copyrigth text (name of the author and year).
  ******************************************************************************************************************
  ******************************************************************************************************************/
@@ -23,7 +24,9 @@ function Footer(props) {
      ** STATES & REFERENCES & VARIABLES
      **************************************************************************************************************
      **************************************************************************************************************/
-    const copyright_footer = "Copyright © 2024 Herbert M. Potechius. All Rights Reserved"
+     const currentYear = new Date().getFullYear(); // Get the current year dynamically
+     const copyright_footer = `Copyright © ${currentYear} Herbert M. Potechius. All Rights Reserved`;
+ 
 
     /**************************************************************************************************************
      **************************************************************************************************************

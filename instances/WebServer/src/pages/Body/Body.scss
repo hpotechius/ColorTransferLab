@@ -1,5 +1,5 @@
 /*
-Copyright 2024 by Herbert Potechius,
+Copyright 2025 by Herbert Potechius,
 Technical University of Berlin
 Faculty IV - Electrical Engineering and Computer Science - Institute of Telecommunication Systems - Communication Systems Group
 All rights reserved.
@@ -43,7 +43,6 @@ Please see the LICENSE file that should have been included as part of this packa
     top: 25px;
     width: 100%;
     height: calc(100% - 25px);
-    background-color: green;
 }
 
 #renderer_out {
@@ -51,7 +50,6 @@ Please see the LICENSE file that should have been included as part of this packa
     width: $rendererout_innerwidth;
     height: $rendererout_innerheight;
     left: $renderer_width;
-    // margin: $box_margin;
     border: solid $darkgrey $box_border;
 }
 
@@ -59,8 +57,6 @@ Please see the LICENSE file that should have been included as part of this packa
     position: absolute;
     width: $renderer_innerwidth;
     height: $renderer_innerheight;
-    //margin: $box_margin;
-    background-color: peru;
     border: solid $darkgrey $box_border;
     top: $renderer_height;
 }
@@ -92,10 +88,6 @@ Please see the LICENSE file that should have been included as part of this packa
     padding: 0px;
     width: calc(100% + 6px);
     background-color: $darkgrey;
-  }
-
-.tabs_body {
-    background-color: salmon;
 }
   
 .tab-list-item_body {
@@ -115,7 +107,6 @@ Please see the LICENSE file that should have been included as part of this packa
 
 .tab-content_body {
     position: absolute;
-    background-color: purple;
     width: 100%;
     height: calc(100% - #{$tab_span});
 }
@@ -137,10 +128,12 @@ Please see the LICENSE file that should have been included as part of this packa
     width: 17px;
 }
 
-#body_source_button:hover {
+#body_source_button:hover,
+#body_reference_button:hover,
+#body_output_button:hover,
+.body_button:hover{
     filter: brightness(1.5);
 }
-
 
 #body_reference_button {
     position: absolute;
@@ -159,10 +152,6 @@ Please see the LICENSE file that should have been included as part of this packa
     width: 17px;
 }
 
-#body_reference_button:hover {
-    filter: brightness(1.5);
-}
-
 #body_output_button {
     position: absolute;
     padding: 2px;
@@ -178,10 +167,6 @@ Please see the LICENSE file that should have been included as part of this packa
     margin: 0px;
     height: 17px;
     width: 17px;
-}
-
-#body_output_button:hover {
-    filter: brightness(1.5);
 }
 
 #body_menu {
@@ -206,8 +191,4 @@ Please see the LICENSE file that should have been included as part of this packa
     padding: 10px;
     margin: 10px;
     font-weight: bold;
-}
-
-.body_button:hover {
-    filter: brightness(1.5);
 }

@@ -1,16 +1,34 @@
+/*
+Copyright 2025 by Herbert Potechius,
+Technical University of Berlin
+Faculty IV - Electrical Engineering and Computer Science - Institute of Telecommunication Systems - Communication Systems Group
+All rights reserved.
+This file is released under the "MIT License Agreement".
+Please see the LICENSE file that should have been included as part of this package.
+*/
+
 import { useRef, useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import {useThree} from '@react-three/fiber';
 import * as THREE from 'three';
+import {BufferAttribute} from 'three';
+
 import LightFieldShader from "shader/LightFieldShader.js";
 import { updateHistogram, calculateColorHistograms, calculateMeanAndStdDev } from 'Utils/Utils';
-import {BufferAttribute} from 'three';
+
 
 // Vertex and Fragment shaders
 const vertexShader = LightFieldShader.vertexShader
 const fragmentShader = LightFieldShader.fragmentShader
 
 
-const LightFieldPlane = forwardRef(({ camsX, camsY, width, height, cameraGap, fieldTexture, aperture, focus, stInput, onColorDataReady,cameraRef, view }, ref) => {
+/******************************************************************************************************************
+ ******************************************************************************************************************
+ ** FUNCTIONAL COMPONENT
+ ** 
+ ** Plane for rendering the light field.
+ ******************************************************************************************************************
+ ******************************************************************************************************************/
+const LightFieldPlane = forwardRef(({ camsX, camsY, width, height, cameraGap, fieldTexture, aperture, focus, stInput,cameraRef, view }, ref) => {
     /**************************************************************************************************************
      **************************************************************************************************************
      ** STATES & REFERENCES & VARIABLES
@@ -30,6 +48,15 @@ const LightFieldPlane = forwardRef(({ camsX, camsY, width, height, cameraGap, fi
     const planePtsRef = useRef();
     const { scene, gl} = useThree();
 
+    /**************************************************************************************************************
+     **************************************************************************************************************
+     ** HOOKS
+     **************************************************************************************************************
+     **************************************************************************************************************/
+
+    /**************************************************************************************************************
+     * 
+     **************************************************************************************************************/
     useImperativeHandle(ref, () => ({
         getState() {
             return state;
@@ -41,9 +68,6 @@ const LightFieldPlane = forwardRef(({ camsX, camsY, width, height, cameraGap, fi
             }));
         },
         captureShaderOutput: () => {
-        //     console.log(cameraRef.current)
-
-            // console.log(cameraRef.current)
             // // Render the scene to a render target
             const renderTarget = new THREE.WebGLRenderTarget(width, height);
             gl.setRenderTarget(renderTarget);
@@ -53,18 +77,12 @@ const LightFieldPlane = forwardRef(({ camsX, camsY, width, height, cameraGap, fi
             const pixelBuffer = new Uint8Array(width * height * 4);
             gl.readRenderTargetPixels(renderTarget, 0, 0, width, height, pixelBuffer);
 
-            // Call the callback function with the pixel data
-            if (onColorDataReady) {
-                onColorDataReady(pixelBuffer);    
-            }
-
-
             const { mean, stdDev } = calculateMeanAndStdDev(pixelBuffer, false, 4);
             // set the histogram data for 2D and 3D rendering
             const histograms = calculateColorHistograms(pixelBuffer, false, 4);
 
             let colors_buf = new Float32Array(pixelBuffer)
-            // Entfernen jedes vierten Wertes aus colors_buf und Teilen der verbleibenden Werte durch 255
+            // Remove every fourth value from colors_buf and divide the remaining values by 255
             const filteredColorsBuf = colors_buf
                 .filter((_, index) => (index + 1) % 4 !== 0)
                 .map(value => value / 255);
@@ -80,7 +98,6 @@ const LightFieldPlane = forwardRef(({ camsX, camsY, width, height, cameraGap, fi
                 }
             }));
 
-            // histogram3D.current = histograms[1]
             updateHistogram(histograms[0], mean, stdDev, view)
             
             // Reset the render target to null
@@ -89,7 +106,9 @@ const LightFieldPlane = forwardRef(({ camsX, camsY, width, height, cameraGap, fi
         }
     }));
 
-
+    /**************************************************************************************************************
+     * 
+     **************************************************************************************************************/
     useEffect(() => {
         if(fieldTexture !== null) {
             const planeGeo = new THREE.PlaneGeometry(camsX * cameraGap, camsY * cameraGap, camsX, camsY);
@@ -129,6 +148,11 @@ const LightFieldPlane = forwardRef(({ camsX, camsY, width, height, cameraGap, fi
 
     }, [camsX, camsY, cameraGap, fieldTexture, aperture, focus, stInput, scene]);
 
+    /**************************************************************************************************************
+     **************************************************************************************************************
+     ** RENDERING
+     **************************************************************************************************************
+     **************************************************************************************************************/
     return null;
 
 });

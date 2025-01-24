@@ -1,5 +1,5 @@
 /*
-Copyright 2024 by Herbert Potechius,
+Copyright 2025 by Herbert Potechius,
 Technical University of Berlin
 Faculty IV - Electrical Engineering and Computer Science - Institute of Telecommunication Systems - Communication Systems Group
 All rights reserved.
@@ -25,10 +25,6 @@ Please see the LICENSE file that should have been included as part of this packa
     height: 30px;
 }
 
-#Header_logo:hover {
-    filter: brightness(0.7);
-}
-
 #Header_text {
     position: absolute;
     color: $lightgrey;
@@ -39,7 +35,7 @@ Please see the LICENSE file that should have been included as part of this packa
 #header_version {
     position: absolute;
     font-size: 12px;
-    margin-left: calc(230px);
+    margin-left: calc(260px);
     margin-top: 10px;
 }
 
@@ -72,7 +68,10 @@ Please see the LICENSE file that should have been included as part of this packa
     height: 30px;
 }
 
-#Header_github:hover, #Header_menu:hover, #Header_feedback:hover {
+#Header_github:hover, 
+#Header_menu:hover, 
+#Header_feedback:hover,
+#Header_logo:hover {
     filter: brightness(1.5);
 }
 

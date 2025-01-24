@@ -1,5 +1,5 @@
 /*
-Copyright 2024 by Herbert Potechius,
+Copyright 2025 by Herbert Potechius,
 Technical University of Berlin
 Faculty IV - Electrical Engineering and Computer Science - Institute of Telecommunication Systems - Communication Systems Group
 All rights reserved.
@@ -9,8 +9,8 @@ Please see the LICENSE file that should have been included as part of this packa
 
 import React, { useState, useEffect, useRef} from 'react';
 import $ from 'jquery';
-import {active_server} from 'Utils/System'
-import {pathjoin, consolePrint} from 'Utils/Utils';
+
+import {consolePrint} from 'Utils/Utils';
 import {execution_data} from 'Utils/System'
 import ImageRenderer from 'pages/Body/ImageRenderer'
 import VideoRenderer from 'pages/Body/VideoRenderer'
@@ -24,27 +24,38 @@ import './Renderer.scss';
 import { WebRTCConnection } from 'Utils/System';
 
 
+/******************************************************************************************************************
+ ******************************************************************************************************************
+ ** EXPORTED FUNCTIONS
+ ******************************************************************************************************************
+ ******************************************************************************************************************/
+
+/**************************************************************************************************************
+ * 
+ **************************************************************************************************************/
 export const active_reference = "Single Input"
 
-// Description of the <data_config> object
-// rendering -> contains the current render object
-export const data_config = {}
-for(let renderer_obj of ["Source", "Reference", "Output"]) {
-    data_config[renderer_obj] = {
-        "filename": null,
-        "rendering": [],
-        "mesh": null,
-        "3D_color_histogram": null,
-        "3D_color_distribution": null,
-        "voxel_grid": null,
-        "pc_center": null,
-        "pc_scale":null
-    }
-}
+/**************************************************************************************************************
+ * Description of the <data_config> object
+ * rendering -> contains the current render object
+ **************************************************************************************************************/
+// export const data_config = {}
+// for(let renderer_obj of ["Source", "Reference", "Output"]) {
+//     data_config[renderer_obj] = {
+//         "filename": null,
+//         "rendering": [],
+//         "mesh": null,
+//         "3D_color_histogram": null,
+//         "3D_color_distribution": null,
+//         "voxel_grid": null,
+//         "pc_center": null,
+//         "pc_scale":null
+//     }
+// }
 
-/* ------------------------------------------------------------------------------------------------------------
--- Shows either the 2D or 3D renderer
--------------------------------------------------------------------------------------------------------------*/
+/**************************************************************************************************************
+ * Shows either the 2D or 3D renderer
+ **************************************************************************************************************/
 export const showView = (imageID, videoID, renderCanvasID, view_lightfieldID, view_emptyID, view) => {
     $("#" + view_emptyID).css("display", "none")
     if(view === "3D") {
@@ -79,14 +90,10 @@ export const showView = (imageID, videoID, renderCanvasID, view_lightfieldID, vi
     }
 }
 
-/* ----------------------------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------------------------------
--- Renderer windows for (1) Source, (2) Reference, (3) Output and (4) Comparison
--------------------------------------------------------------------------------------------------------------------
------------------------------------------------------------------------------------------------------------------*/
 /******************************************************************************************************************
  ******************************************************************************************************************
  ** FUNCTIONAL COMPONENT
+ **
  ** Renderer windows for (1) Source, (2) Reference and (3) Output
  ******************************************************************************************************************
  ******************************************************************************************************************/
@@ -131,13 +138,11 @@ const Renderer = (props) =>  {
     const object3D = useRef(null)
 
     const obj_path = useRef("xxx")
-    const infoBoxEnabled = useRef(false)
 
     /* ------------------------------------------------------------------------------------------------------------
     -- VARIABLES
     -------------------------------------------------------------------------------------------------------------*/
     const ID = props.id;
-    const window = props.window;
     const TITLE = props.title
 
     const imageID = "renderer_image" + ID
@@ -151,23 +156,12 @@ const Renderer = (props) =>  {
     const renderBarID = "renderer_bar" + ID
     const view_loadingID = "view_loading_" + ID
     const view_emptyID = "view_empty_" + RID
- 
-    const initPath = "data"
-
 
     /**************************************************************************************************************
      **************************************************************************************************************
      ** HOOKS
      **************************************************************************************************************
      **************************************************************************************************************/
-    
-    /**************************************************************************************************************
-     * Remove the loading screen after the object is loaded.
-     **************************************************************************************************************/
-    // useEffect(() => {
-    //     let loadingRenderer = $("#" + view_loadingID)
-    //     loadingRenderer.css("display", "none")
-    // }, [complete])
 
     /**************************************************************************************************************
      * 
@@ -193,18 +187,8 @@ const Renderer = (props) =>  {
             $("#" + ID).on("dragover", function(e) {e.preventDefault();})
             $("#" + ID).on("drop", (e) => {drop_method(e.originalEvent)})
             $("#" + ID).on("itemClicked", function(e, data){click_method(data)});
-        } else {
-            // let out_renderer_id = "renderer_image_innerrenderer_out"
-            // let out_renderer = document.getElementById(out_renderer_id)
-            // let observer = new MutationObserver(observer_updateOutputRenderer);
-            // let options = {
-            //     attributes: true,
-            //     attributeFilter: ["data-update"]
-            // };
-            // observer.observe(out_renderer, options);
         }
     }, []);
-
 
     /**************************************************************************************************************
      **************************************************************************************************************
@@ -213,7 +197,8 @@ const Renderer = (props) =>  {
      **************************************************************************************************************/
 
     /**************************************************************************************************************
-     * 
+     * Callback function executed because Variable "responseFile" in WebRTCConnection has changed.
+     * Update of the renderer with the new file.
      **************************************************************************************************************/
     function handleRenderFile(dataStruct) {
         let value = dataStruct["data"]
@@ -237,11 +222,8 @@ const Renderer = (props) =>  {
             // Value is already an Array of ArrayBuffers
             const receivedBlob = new Blob(value);
             const image_path = URL.createObjectURL(receivedBlob);
-            console.log(image_path)
-
+            console.debug('%c[INFO] Loading File ' + image_path, "color: orange;");
             setFilePath_Image(image_path)
-
-            //obj_path.current = pathjoin(file_path, file_name_with_ext)
             obj_path.current = abstr_file_path
         } else if(file_type === "Video") {
             console.debug('%c[INFO] Handling Video File', "color: orange;");
@@ -254,11 +236,8 @@ const Renderer = (props) =>  {
             // Convert Array Buffer to Blob and then to URL Object
             const receivedBlob = new Blob(value);
             const video_path = URL.createObjectURL(receivedBlob);
-
-            //var video_path = pathjoin(active_server, initPath, file_path, file_name_with_ext)
+            console.debug('%c[INFO] Loading File ' + video_path, "color: orange;");
             setFilePath_Video(video_path)
-
-            // obj_path.current = pathjoin(file_path, file_name_with_ext)
             obj_path.current = abstr_file_path
         } else if(file_type === "PointCloud") {
             console.debug('%c[INFO] Handling PointCloud File', "color: orange;");
@@ -267,13 +246,12 @@ const Renderer = (props) =>  {
             // Convert Array Buffer to Blob and then to URL Object
             const receivedBlob = new Blob(value);
             const filepath = URL.createObjectURL(receivedBlob);
-
+            console.debug('%c[INFO] Loading File ' + filepath, "color: orange;");
             setFilePath_Mesh(filepath)
-            // obj_path.current = pathjoin(file_path, file_name_with_ext)
             obj_path.current = abstr_file_path
             switchView("Mesh")
         } else if(file_type === "Mesh") {
-            // console.debug('%c[INFO] Loading mesh', 'color: lightblue', file_path)
+            console.debug('%c[INFO] Handling Mesh File', "color: orange;");
             mode.current = "Mesh"
 
             // contains paths to the obj, png and the mtl file
@@ -284,27 +262,22 @@ const Renderer = (props) =>  {
                 meshObj_paths.push(meshObj_path)
             }
 
-            // svar filepath = pathjoin(active_server, initPath, file_path, file_name)
+            console.debug('%c[INFO] Loading File ' + meshObj_paths, "color: orange;");
             setFilePath_Mesh(meshObj_paths)
             obj_path.current = abstr_file_path
-            //meshRendererMode.current = "Mesh"
-            changeRendering(object3D.current)
             switchView("Mesh")
         } else if(file_type === "GaussianSplatting") {
-            console.log("INFO", "Loading gaussian splatting: " + abstr_file_path)
+            console.debug('%c[INFO] Handling Gaussian Splatting File', "color: orange;");
             mode.current = "GaussianSplatting"
-            //const gaussiansplat_path = pathjoin(active_server, initPath, file_path, file_name_with_ext)
-            //const gaussiansplat_path = value
             const receivedBlob = new Blob(value);
             const gaussiansplat_path = URL.createObjectURL(receivedBlob);
             const real_ext = abstr_file_path.split("-").pop()
-            console.log("INFO", "Loading gaussian splatting: " + gaussiansplat_path + "." + real_ext)
+            console.debug('%c[INFO] Loading File ' + gaussiansplat_path + "." + real_ext, "color: orange;");
             setFilePath_GaussianSplat(gaussiansplat_path + "." + real_ext)
             obj_path.current = abstr_file_path
             switchView("GaussianSplat")
         } else if(file_type === "VolumetricVideo") {
-            console.log("INFO", "Loading volumetric video: " + abstr_file_path)
-            // let volumetricvideo_path = pathjoin(active_server, initPath, file_path, file_name)
+            console.debug('%c[INFO] Handling Volumetric Video File', "color: orange;");
             mode.current = "VolumetricVideo"
 
             // contains paths to the obj, png and the mtl file
@@ -316,14 +289,12 @@ const Renderer = (props) =>  {
                 voluObj_paths.push(volu_path)
             }
 
+            console.debug('%c[INFO] Loading File ' + voluObj_paths, "color: orange;");
             setFilePath_Mesh(voluObj_paths)
-
-            // obj_path.current = pathjoin(file_path, file_name_with_ext)
             obj_path.current = abstr_file_path
             switchView("Mesh")
         } else if(file_type === "LightField") {
-        // } else if(file_ext === "lf") {
-            console.log("INFO", "Loading lightfield: " + abstr_file_path)
+            console.debug('%c[INFO] Handling LightField File', "color: orange;");
             mode.current = "LightField"
             
             // contains paths to the json and the mp4 file
@@ -335,19 +306,10 @@ const Renderer = (props) =>  {
                 lightFieldObj_paths.push(lightfield_path)
             }
 
+            console.debug('%c[INFO] Loading File ' + lightFieldObj_paths, "color: orange;");
             setFilePath_LightField(lightFieldObj_paths)
             switchView("LightField")
             obj_path.current = abstr_file_path
-
-            //let lightfield_path = pathjoin(active_server, initPath, file_path, file_name + ".mp4");
-            // let lightfield_path = pathjoin(initPath, file_path, file_name + ".mp4");
-
-        }
-
-        // if the infobox is visible, disable and rerender it if a new object is loaded
-        if(infoBoxEnabled.current) {
-            infoBoxEnabled.current = false
-            showObjectInfo()
         }
 
         // set the execution parameters
@@ -378,15 +340,12 @@ const Renderer = (props) =>  {
         updateRenderer(file_path, file_name, file_name_with_ext, file_ext)
     }
 
-    /* ------------------------------------------------------------------------------------------------------------
-    -- This method is called when the user selects the Source- or the Reference-Button on the Items-Menu.
-    -- Note:
-    --   Content of data:
-    --   E.g. data = /Meshes/GameBoy_medium:GameBoy_medium.obj
-    --   I.e. <path_to_file>:<file>
-    -------------------------------------------------------------------------------------------------------------*/
     /**************************************************************************************************************
-     * 
+     * This method is called when the user selects the Source- or the Reference-Button on the Items-Menu.
+     * Note:
+     * Content of data:
+     * E.g. data = /Meshes/GameBoy_medium:GameBoy_medium.obj
+     * I.e. <path_to_file>:<file>
      **************************************************************************************************************/
     function click_method(data) {
         var [file_path, file_name_with_ext] = data.split(":")
@@ -396,15 +355,11 @@ const Renderer = (props) =>  {
     }
 
     /**************************************************************************************************************
-     * 
+     * Will be executed when user drops a file on the renderer or selects a file from the Items-Menu.
+     * Sends a request to the compute node to get the file.
      **************************************************************************************************************/
     function updateRenderer(file_path, file_name, file_name_with_ext, file_ext) {
-        console.debug("%c[INFO] Loading object", "color: orange")
-
-        console.log("INFO", "Loading object: " + file_path)
-        console.log("INFO", "Loading object: " + file_name)
-        console.log("INFO", "Loading object: " + file_name_with_ext)
-        console.log("INFO", "Loading object: " + file_ext)
+        console.debug("%c[INFO] Loading object: ", "color: orange", {"path": file_path, "name": file_name, "name_with_ext": file_name_with_ext, "ext": file_ext})
 
         const data_send = {
             "command": "/file",
@@ -418,10 +373,15 @@ const Renderer = (props) =>  {
     }
 
     /**************************************************************************************************************
-     * 
+     * Switch between the different views:
+     * (1) Initial view
+     * (2) Image
+     * (3) Video
+     * (4) LightField
+     * (5) Mesh / PointCloud / Volumetric Video
+     * (6) Gaussian Splatting
      **************************************************************************************************************/
     const switchView = (view) => {
-        // let loadingRenderer = $("#" + view_loadingID)
         let emptyRenderer = $("#" + view_emptyID)
         let imageRenderer = $("#" + imageID)
         let videoRenderer = $("#" + videoID)
@@ -429,8 +389,6 @@ const Renderer = (props) =>  {
         let meshRenderer = $("#" + renderCanvasID)
         let gaussianSplatRenderer = $("#" + view_gaussianSplat_ID)
 
-        // loadingRenderer.css("display", "block")
-        // loadingRenderer.css("display", "none")
         emptyRenderer.css("display", "none")
         imageRenderer.css("visibility", "hidden")
         videoRenderer.css("visibility", "hidden")
@@ -447,90 +405,6 @@ const Renderer = (props) =>  {
         else if(view === "LightField") {lightFieldRenderer.css("display", "block")}
         else if(view === "Mesh") {meshRenderer.css("display", "block")}
         else if(view === "GaussianSplat") {gaussianSplatRenderer.css("display", "block")}
-        
-        //filePath_Mesh = null
-    }
-
-    /**************************************************************************************************************
-     * 
-     **************************************************************************************************************/
-    function show3DColorDistribution(e){
-        // if this method is called via the EventListener, <e> describes the event otherwise
-        // <e> describes the checkbox
-        let button_enabled;
-        if (typeof e.target !== 'undefined')
-            button_enabled = e.target.checked
-        else
-            button_enabled = e.checked
-
-        if(mode.current === "Image") {
-            if(button_enabled) {
-                // disable all the other checkboxes
-                disableCheckbox("settings_3dcolorhistogram", show3DColorHistogram)
-                showView(imageID, videoID, renderCanvasID, view_lightfieldID, view_emptyID, "3D")
-                changeRendering(colorDistribution3D.current)
-            } else {
-                showView(imageID, videoID, renderCanvasID, view_lightfieldID, view_emptyID, "2D")
-            }
-        } else {
-            if(button_enabled) {
-                // disable all the other checkboxes
-                disableCheckbox("settings_3dcolorhistogram", show3DColorHistogram)
-                changeRendering(colorDistribution3D.current)
-            } else {
-                changeRendering(object3D.current)
-            }
-        }
-    }
-
-    /**************************************************************************************************************
-     * 
-     **************************************************************************************************************/
-    function show3DColorHistogram(e){
-        // if this method is called via the EventListener, <e> describes the event otherwise
-        // <e> describes the checkbox
-        let button_enabled;
-        if (typeof e.target !== 'undefined') button_enabled = e.target.checked
-        else button_enabled = e.checked
-
-        if(mode.current === "Image") {
-            if(button_enabled) {
-                // disable all the other checkboxes
-                disableCheckbox("settings_rgbcolorspace", show3DColorDistribution)
-                showView(imageID, videoID, renderCanvasID, view_lightfieldID, view_emptyID, "3D")
-                changeRendering(histogram3D.current)
-            } else {
-                showView(imageID, videoID, renderCanvasID, view_lightfieldID, view_emptyID, "2D")
-            }
-        }
-
-        if(mode.current === "PointCloud" || mode.current === "Mesh") {
-            if(button_enabled) {
-                // disable all the other checkboxes
-                disableCheckbox("settings_rgbcolorspace", show3DColorDistribution)
-                changeRendering(histogram3D.current)
-            }               
-            else
-                changeRendering(object3D.current)
-        }
-    }
-
-    /* ------------------------------------------------------------------------------------------------------------
-    -- Enables a given output type. Supported types are:
-    -- (1) mesh
-    -- (2) voxel_grid
-    -- (3) 3D_color_distribution
-    -- (4) 3D_color_histogram
-    -------------------------------------------------------------------------------------------------------------*/
-    // TODO: Reduce to one method
-    /**************************************************************************************************************
-     * 
-     **************************************************************************************************************/
-    function changeRendering(obj) {
-        //mesh.current.pop()
-        mesh.current.length = 0;
-        mesh.current.push(obj)
-        changeEnableupdate(Math.random())
     }
 
     /**************************************************************************************************************
@@ -543,57 +417,6 @@ const Renderer = (props) =>  {
     }
 
     /**************************************************************************************************************
-     * 
-     **************************************************************************************************************/
-    function showObjectInfo() {
-        let curinfo = objInfo.current["data"]
-        let infos;
-        if(mode.current === "Image")
-            infos = {
-                "height": curinfo["height"],
-                "width": curinfo["width"],
-                "channels": curinfo["channels"],
-            }
-        else if(mode.current === "PointCloud")
-            infos = {
-                "num_vertices": curinfo["num_vertices"],
-                "vertexcolors": curinfo["vertexcolors"],
-                "vertexnormals": curinfo["vertexnormals"],
-            }
-        else if(mode.current === "Mesh")
-            infos = {
-                "num_vertices": curinfo["num_vertices"],
-                "num_faces": curinfo["num_faces"],
-                "trianglenormals": curinfo["trianglenormals"],
-                "vertexcolors": curinfo["vertexcolors"],
-                "vertexnormals": curinfo["vertexnormals"],
-            }
-
-        // check if object was selected and the object information is requested
-        if(objInfo.current == null) {
-            consolePrint("WARNING", "No object is selected...");
-            return;
-        }
-
-        if (objInfo.current["enabled"]) {
-            if(infoBoxEnabled.current) 
-                $("#" + infoboxID).css("opacity", 0.0)
-            else 
-                $("#" + infoboxID).css("opacity", 0.75)
-            infoBoxEnabled.current = !infoBoxEnabled.current
-            let output_text = ""
-            for (let k in infos){
-                output_text += "<b>"+k+"</b>: " + infos[k] + "<br />"
-            }
-
-            $("#" + infoboxID).html(output_text)
-        }
-        else 
-            consolePrint("WARNING", "No object is selected...")
-    }
-
-
-    /**************************************************************************************************************
      * Allows the upload of local images and point clouds.
      * The items can be accessed via the <Uploads> button within the <DATABASE> window.
      * DISABLED: The upload function is disabled in the current version.
@@ -604,17 +427,12 @@ const Renderer = (props) =>  {
         input.onchange = _this => {
                 let files =   Array.from(input.files);
 
-
                 files.forEach(file => {
                     let reader = new FileReader();
 
-                    console.log(file)
-            
                     reader.onload = function(e) {
                         let arrayBuffer = e.target.result;
-                        console.log(arrayBuffer); // Hier haben Sie den ArrayBuffer des hochgeladenen Bildes
-
-
+ 
                         WebRTCConnection.sendMessage(JSON.stringify({"command": "/upload_start", "data": file.name}))
                         WebRTCConnection.sendMessage(arrayBuffer, true)
                         WebRTCConnection.sendMessage(JSON.stringify({"command": "/upload_end", "data": ""}))
@@ -622,29 +440,6 @@ const Renderer = (props) =>  {
             
                     reader.readAsArrayBuffer(file);
                 });
-
-                // try {
-                //     // const xmlHttp = new XMLHttpRequest();
-                //     // const theUrl = pathjoin(active_server, "upload");
-                //     // xmlHttp.open( "POST", theUrl, false );
-                    
-                //     let formData = new FormData()
-                //     formData.append("file", files[0]);
-
-                //     console.log(files)
-
-                //     // WebRTCConnection.sendMessage(JSON.stringify(out_dat))
-
-                //     // xmlHttp.send(formData);
-                //     consolePrint("INFO", "File uploaded")
-
-                //     // update databse content
-                //     //request_database_content(active_server)
-                //     //request_database_content()
-                // }
-                // catch (e) {
-                //     console.log(e)
-                // }
             };
         input.click();
     }
