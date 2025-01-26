@@ -17,7 +17,7 @@ Upon selecting an item from the database, a request is sent to SE2 for downloadi
 
 The system's main purpose is color transfer application and evaluation, achieved through a corresponding POST request to CE, which responds with results.
 
-![SystemArchitecture](https://github.com/ImmersiveMediaLaboratory/ColorTransferLab/assets/15614886/1a47b46d-f097-4151-a4ef-62c7f8533938)
+![ColorTransferLabV2-Simple](https://github.com/user-attachments/assets/5cda9c51-34ff-4131-a79d-aa594c3caa4b)
 
 
 
