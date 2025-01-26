@@ -33,3 +33,5 @@ export const execution_data = {
 
 export let evaluation_results = {}
 export let available_metrics = []
+
+export let available_methods = {}

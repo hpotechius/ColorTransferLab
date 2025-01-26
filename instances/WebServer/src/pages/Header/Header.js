@@ -29,9 +29,11 @@ function Header(props) {
      **************************************************************************************************************
      **************************************************************************************************************/
     const [componentStyle, setComponentStyle] = useState({});
+    const [feedbackContent, setFeedbackContent] = useState("Feedback");
     const logo_header = "assets/logo.png";
     const icon_menu_button = "assets/icons/icon_menu.png";
     const icon_github_button = "assets/icons/icon_github.png";
+    const icon_feedback_button = "assets/icons/icon_feedback.png";
     const title_header = "ColorTransferLabV2";
     const version_header = "v 1.0.0"
 
@@ -50,8 +52,10 @@ function Header(props) {
         const updateComponentStyle = () => {
             if (window.innerWidth < mobileMaxWidth) {
                 setComponentStyle({ display: "block"});
+                setFeedbackContent(<img id="feedback_icon" alt="" src={icon_feedback_button}/>);
             } else {
                 setComponentStyle({});
+                setFeedbackContent("Feedback");
             }
         };
 
@@ -100,7 +104,7 @@ function Header(props) {
 
             <div id="header-container">
                 <div id="Header_feedback" onClick={openFeedback} >
-                    Feedback
+                    {feedbackContent}
                 </div>
 
                 <a id="Header_github" href="https://github.com/ImmersiveMediaLaboratory/ColorTransferLab" target="_blank" rel="noreferrer">

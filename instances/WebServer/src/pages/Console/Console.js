@@ -20,7 +20,7 @@ import {active_reference} from "pages/Body/Body"
 import {color_palette} from "pages/Body/ColorTheme"
 import TabButton from './TabButton';
 import ExecutionButton from "./ExecutionButton";
-import {execution_data, WebRTCConnection} from 'Utils/System'
+import {execution_data, WebRTCConnection, available_methods} from 'Utils/System'
 import './Console.scss';
 
 
@@ -88,12 +88,86 @@ function Console() {
      * Sends a request to the server to apply the selected color transfer algorithm.
      **************************************************************************************************************/
     function handleClickPlay() {
+        const idx = Object.keys(available_methods).find(index => available_methods[index]["key"] === execution_data["approach"]);
+
+        // save the reference value to restore it later
+        // Only necessary for colorization
+        const ref_temp = execution_data["reference"]
+
+        // transfer type: colorization, color transfer, style transfer
+        let transfer_type = ""
+        if (execution_data["approach"] !== "")
+            transfer_type = available_methods[idx]["type"]
+        
+        if (transfer_type === "Colorization") {
+            // set reference to source if colorization is selected
+            // has to be reversed later
+            execution_data["reference"] = execution_data["source"]
+        }
+
         // check if a Single Input Reference or a Color Theme Reference is selected
         let ref_val
         if(active_reference === "Single Input")
             ref_val = execution_data["reference"]
         else if(active_reference === "Color Theme")
             ref_val = color_palette
+
+        // determine source data type
+        const source_ext = execution_data["source"].split('.').pop()
+        let source_type
+        if (source_ext === "png")
+            source_type = "Image"
+        else if (source_ext === "ply")
+            source_type = "PointCloud"
+        else if (source_ext === "mesh")
+            source_type = "Mesh"
+        else if (source_ext === "mp4")
+            source_type = "Video"
+        else if (source_ext === "lf")
+            source_type = "LightField"
+        else if (source_ext === "volu")
+            source_type = "VolumetricVideo"
+        else if (source_ext === "gsp")
+            source_type = "GaussianSplatting"
+        else{
+            consolePrint("WARNING", "The selected source file type is not supported yet.")
+            return
+        }
+
+
+        const reference_ext = execution_data["reference"].split('.').pop()
+        let reference_type
+        if (reference_ext === "png")
+            reference_type = "Image"
+        else if (reference_ext === "ply")
+            reference_type = "PointCloud"
+        else if (reference_ext === "mesh")
+            reference_type = "Mesh"
+        else if (reference_ext === "mp4")
+            reference_type = "Video"
+        else if (reference_ext === "lf")
+            reference_type = "LightField"
+        else if (reference_ext === "volu")
+            reference_type = "VolumetricVideo"
+        else if (reference_ext === "gsp")
+            reference_type = "GaussianSplatting"
+        else{
+            // if(transfer_type !== "Colorization"){
+            consolePrint("WARNING", "The selected reference file type is not supported yet.")
+            return
+            // } else {
+            //     // set reference type to image if the selected approach is colorization in order to bypass the compatibility check
+            //     reference_type = "Image"
+            // }
+        }
+
+        // Check if the selected approach is compatible with the selected source and reference
+        const supported_datatypes = available_methods[idx]["datatypes"]
+        if (!supported_datatypes.includes(source_type) || !supported_datatypes.includes(reference_type)) {
+            consolePrint("WARNING", "The selected approach is not compatible with the selected source and reference.")
+            return
+        }
+
 
         // TEMPORARY: If the gaussian splatting is in .ply or ksplat format, color transfer is not possible
         if (execution_data["source"].includes("-ksplat") || execution_data["reference"].includes("-ksplat") || execution_data["source"].includes("-ply") || execution_data["reference"].includes("-ply")) {
@@ -136,10 +210,23 @@ function Console() {
                     "options": execution_data["options"]
                 }
             }
+
+            if (transfer_type === "Colorization") {
+                // set reference back to the original value
+                execution_data["reference"] = ref_temp
+            }
+
             console.debug("%c[SEND] WebRTC Request to Database: Apply Color Transfer:", "color: lightgreen;", out_dat)
             WebRTCConnection.sendMessage(JSON.stringify(out_dat))
         } else {
             consolePrint("WARNING", "Input selection incomplete or no color transfer approach selected")
+
+            // TEMPORARY
+            const out_dat = {
+                "command": "/test",
+                "data": ""
+            }
+            WebRTCConnection.sendMessage(JSON.stringify(out_dat))
         }
     }
 

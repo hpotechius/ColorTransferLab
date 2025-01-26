@@ -14,7 +14,6 @@ import {OrbitControls, PerspectiveCamera, OrthographicCamera} from "@react-three
 import {Canvas} from "@react-three/fiber";
 import $ from 'jquery';
 import * as GaussianSplats3D from '@mkkellogg/gaussian-splats-3d';
-import { SceneFormat } from '@mkkellogg/gaussian-splats-3d';
 // import { SceneFormat } from 'rendering/GaussianSplats3D/loaders/SceneFormat.js';
 
 import "./GaussianSplatRenderer.scss"
@@ -71,7 +70,13 @@ const GaussianSplatRenderer = (props) => {
     const button_settings_histo_icon = "assets/icons/icon_histogram_grey.png";
     const button_settings_info_icon = "assets/icons/icon_information.png";
 
-
+    // https://github.com/mkkellogg/GaussianSplats3D/blob/main/src/loaders/SceneFormat.js
+    const SceneFormat = {
+        'Splat': 0,
+        'KSplat': 1,
+        'Ply': 2,
+        'Spz': 3
+    };
     /**************************************************************************************************************
      **************************************************************************************************************
      ** HOOKS

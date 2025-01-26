@@ -43,6 +43,7 @@ class WebRTCClient:
         self.reset_peer_connection()
         self.chunk_size = 1048576 # 1MB 
         #self.chunk_size = 16000 # 16KB 
+        #self.chunk_size = 10485760
 
         self.connected_cl = ""
 
@@ -237,6 +238,27 @@ class WebRTCClient:
     async def on_candidate(self, candidate_data):
         Utils.printINFO(f"Add ICE candidate", self.window)
         print(candidate_data["candidate"])
+
+        # Überprüfen, ob der Kandidat leer ist
+        if not candidate_data["candidate"]:
+            print("No ICE candidate provided.")
+
+            # Send message to signal server that the status changed to busy.
+            await self.send_message({
+                "target": "server",
+                "from": self.client_id,
+                "message": "update_status",
+                "data": {
+                    "status": "Idle",
+                    "connected_cl": ""
+                }
+            })
+
+            # Reset peer connection
+            self.connection_event.clear() 
+            self.connection_event.set()
+            return
+
         candidate_array = candidate_data["candidate"].split(" ")
         foundation = candidate_array[0]
         component = candidate_array[1]
@@ -645,8 +667,36 @@ class WebRTCClient:
         ct = ColorTransfer(src, ref, method_id)
         ct.set_options(method_options)
 
-
-        output = func_timeout.func_timeout(240, ct.apply, args=(), kwargs=None)
+        # output = ct.apply()
+        # try:
+        try:
+            output = func_timeout.func_timeout(60, ct.apply, args=(), kwargs=None)
+        except func_timeout.FunctionTimedOut:
+            output = {
+                "status_code": -1,
+                "response": "The algorithm took longer than 60 seconds to process. The process was aborted.",
+                "object": None,
+                "process_time": 0
+            }
+            self.send_datachannel_message(str({
+                "message": "warning",
+                "data" : output
+            }))
+            return
+        
+        if output is None:
+            output = {
+                "status_code": -1,
+                "response": "An Error occured during the color transfer process.",
+                "object": None,
+                "process_time": 0
+            }
+            self.send_datachannel_message(str({
+                "message": "error",
+                "data" : output
+            }))
+            return
+        
 
 
         # response = {
@@ -660,7 +710,10 @@ class WebRTCClient:
         if output["status_code"] == -1:
             return
         
+        # Save output
         output["object"].write(output_path_wo_ext)
+        # Sleep for 5 seconds in order to prevent to send the file before it is written
+        await asyncio.sleep(5.00)  
 
         # Create file path depending on received file extension
         Utils.printSEND(f"Sending Files...", self.window)

@@ -60,6 +60,9 @@ function Main() {
             setWebRTCConnection();
             console.debug("%c[SEND] WebRTC Request to Server: Get List of Databases via /database", "color: lightgreen");
             WebRTCConnection.sendServerMessage("/database", null)
+
+
+
         }
 
         function resize() {

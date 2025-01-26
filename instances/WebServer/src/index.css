@@ -10,6 +10,7 @@ Please see the LICENSE file that should have been included as part of this packa
 
 :root {
     --app-height: 100%;
+    --app-width: 100%;
 }
 
 html {
@@ -18,12 +19,11 @@ html {
     overflow: hidden;
     width: 100vw;
     height: var(--app-height);    
-
 }
 
 body {
     padding: 0;
-    min-width: 1000px;
+    /* min-width: 1000px; */
     margin: 0;
     overflow: hidden;
     width: 100vw;

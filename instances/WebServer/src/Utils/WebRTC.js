@@ -15,7 +15,8 @@ import $ from "jquery";
 import {createDBButtons} from 'pages/SideBarRight/Database'
 import {createCTButtons} from 'pages/SideBarLeft/Algorithms'
 import {createServerButtons} from 'pages/SideBarRight/ComputeNode'
-
+import {consolePrint} from 'Utils/Utils'
+import {available_methods} from "Utils/System";
 
 /******************************************************************************************************************
  ******************************************************************************************************************
@@ -64,6 +65,9 @@ class WebRTC {
         // Indicates the type of the received data from the database server
         this.receivedDataType = ""
 
+        consolePrint("INFO", "Generate Client Name: " + this.client_name)
+        consolePrint("INFO", "Generate Client ID: " + this.client_id)
+
         Object.defineProperty(this, 'responseFile', {
             get: () => this.__responseFile,
             set: (value) => {
@@ -105,8 +109,20 @@ class WebRTC {
             }
         });
 
+
+        this.socket.on("error", (error) => {
+            this.socket.close();
+            consolePrint("ERROR", "Connection to Signal Server " + SIGNAL_SERVER + " failed. Please check the connection.")
+        });
+
+        this.socket.on("connect_error", (error) => {
+            this.socket.close();
+            consolePrint("ERROR", "Connection to Signal Server " + SIGNAL_SERVER + " failed. Please check the connection.")
+        });
+
         this.socket.on("connect", () => {
             console.debug("%c[INFO] Client is connected to Signal Server: ", "color: orange;", SIGNAL_SERVER);
+            consolePrint("INFO", "Client is connected to Signal Server: " + SIGNAL_SERVER)
             this.socket.emit("register", { 
                 client_id: this.client_id,
                 name: this.client_name,
@@ -275,9 +291,34 @@ class WebRTC {
      **************************************************************************************************************/
     initPeerConnection() {
         this.peerConnection = new RTCPeerConnection({
-            iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+            iceServers: [
+                { urls: "stun:stun.l.google.com:19302" },
+                { urls: "stun:stun1.l.google.com:19302" },
+                { urls: "stun:stun2.l.google.com:19302" },
+                { urls: "stun:stun3.l.google.com:19302" },
+                { urls: "stun:stun4.l.google.com:19302" },
+                {
+                    urls: "turn:numb.viagenie.ca",
+                    username: "webrtc@live.com",
+                    credential: "muazkh"
+                }
+            ]
         });
 
+        // ICE-Kandidaten sammeln und senden
+        // this.peerConnection.onicecandidate = (event) => {
+        //     if (event.candidate) {
+        //         console.log("ICE candidate:", event.candidate);
+        //         this.socket.emit("candidate", {
+        //             candidate: event.candidate.candidate,
+        //             sdpMid: event.candidate.sdpMid,
+        //             sdpMLineIndex: event.candidate.sdpMLineIndex,
+        //             usernameFragment: event.candidate.usernameFragment,
+        //             target: this.database_id,
+        //             from: this.client_id,
+        //         });
+        //     }
+        // };
         this.peerConnection.onicecandidate = (event) => {
             if (event.candidate) {
                 console.debug("%c[SEND] WebRTC Request to Server: Sending ICE Candidate", "color: lightgreen;", event.candidate);
@@ -305,6 +346,7 @@ class WebRTC {
 
         this.dataChannel.onopen = () => {
             console.debug("%c[INFO] DataChannel is open", "color: orange;");
+            consolePrint("INFO", "Connected to Compute Node with ID: " + this.database_id)
         };
         this.dataChannel.onclose = () => {
             console.debug("%c[INFO] DataChannel is closed", "color: orange;");
@@ -358,9 +400,10 @@ class WebRTC {
             } else if(message.message == "methods") {
                 console.debug("%c[RECV] WebRTC Response from Database: Received List of Methods", "color: lightblue;")
 
-                const available_methods = message.data["methods"]
+                const available_methods_remote = message.data["methods"]
+                Object.assign(available_methods, available_methods_remote)
                 const method_options = message.data["options"]
-                createCTButtons(available_methods, method_options)
+                createCTButtons(available_methods_remote, method_options)
             } else if(message.message == "containerTransferStart") {
                 console.debug('%c[RECV] WebRTC Response from Database: Start of Container Transfer of type:', 'color: lightblue', message.data)
                 // Store the data type of the received files in order to process the incoming data correctly
@@ -451,6 +494,16 @@ class WebRTC {
                 }
                 this.sendMessage(JSON.stringify(data_send))
                 // this.responseFile = this.receivedBuffersList
+            } else if(message.message == "error") {
+                consolePrint("ERROR", message.data["response"])
+                // shows a loading screen while executing the selected algorithm
+                const view_loadingID = "view_loading_renderer_out"
+                $(`#${view_loadingID}`).css("display", "none")
+            } else if(message.message == "warning") {
+                consolePrint("WARNING", message.data["response"])
+                // shows a loading screen while executing the selected algorithm
+                const view_loadingID = "view_loading_renderer_out"
+                $(`#${view_loadingID}`).css("display", "none")
 
             // } else if(message.message == "outputfileTransferStart") {
             //     this.currentPreviewName = message.data
@@ -474,6 +527,10 @@ class WebRTC {
 
             this.receivedBuffers.push(event.data);
 
+
+            console.log("Received ArrayBuffer: " + downloadPercentage);
+        } else {
+            console.log("Received invalid message type:", event.data);
         }
     }
 
@@ -535,34 +592,25 @@ class WebRTC {
             const offer = await this.peerConnection.createOffer();
             await this.peerConnection.setLocalDescription(offer);
 
-
-            // SDP anpassen, um größere Nachrichten zu ermöglichen
-            // const localDescription = this.peerConnection.localDescription;
-            // const sdpWithIncreasedMaxMessageSize = localDescription.sdp.replace(
-            //     /a=sctp-port:5000\r\n/,
-            //     `a=sctp-port:5000\r\na=max-message-size:10485760\r\n` // Setzt die maximale Nachrichtengröße auf 10 MB
-            // );
-
-            // await this.peerConnection.setLocalDescription({
-            //     type: localDescription.type,
-            //     sdp: sdpWithIncreasedMaxMessageSize,
-            // });
-
-
-
             console.debug("%c[SEND] WebRTC Request to Server: Sending Offer", "color: lightgreen;", offer);
             this.socket.emit("message", {
                 type: "offer",
                 sdp: offer.sdp,
                 target: sid,
                 from: this.client_id,
-            }, (ack) => {
-                if (ack.status === 'ok') {
-                    console.debug("Offer successfully sent and acknowledged by server.");
-                } else {
-                    console.error("Failed to send offer:", ack.error);
-                }
             });
+            // this.socket.emit("message", {
+            //     type: "offer",
+            //     sdp: offer.sdp,
+            //     target: sid,
+            //     from: this.client_id,
+            // }, (ack) => {
+            //     if (ack.status === 'ok') {
+            //         console.debug("Offer successfully sent and acknowledged by server.");
+            //     } else {
+            //         console.error("Failed to send offer:", ack.error);
+            //     }
+            // });
         } catch (error) {
             console.error("Error creating or setting local description:", error);
         }    
