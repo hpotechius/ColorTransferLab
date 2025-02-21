@@ -252,9 +252,7 @@ DESCRIPTION
     <td width="25%"><b>Color Space</b></td>
     <td>Enables/Disables the visualization of the color distribution for images and 3D point clouds.</td>
   </tr>
-</table>
-
---- 
+</table> 
 
 ## 5. List of other Color Transfer Tools
 - [Palette-based Photo Recoloring](https://recolor.cs.princeton.edu/demo/index.html)
@@ -263,18 +261,12 @@ DESCRIPTION
 - [Photo Recoloring](http://b-z.github.io/photo_recoloring/)
 - Adobe Photoshop's Color Transfer neural filter
 
----
-
 ## 6. Ressources 
 ...
-
---- 
 
 ## 7. Acknowledgements
 - The light field renderer is adapted from [hypothete's lightfield-webgl2 repository](https://github.com/hypothete/lightfield-webgl2).
 - Gaussian Splatting renderer is adapted from [mkkellogg's GaussianSplats3D repository](https://github.com/mkkellogg/GaussianSplats3D)
-
---- 
 
 ## 8. Citation
 If you utilize this code in your research, kindly provide a citation:
