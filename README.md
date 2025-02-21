@@ -34,9 +34,9 @@ The above image illustrates the three stages of the compute node:
 - Connected Stage: Client and compute node are connected for peer-to-peer data transmission.
 
 ## 2. Setup
-### 2.1 Advanced Setup
 In this setup, the signaling server is provided via https://signal.potechius.com, and the user interface is served through the web server at https://potechius.com/ColorTransferLab. The only instance that must be provided by the user is the compute node. Notably, both the signaling server and the web server are included in this repository and can be self-hosted. The following steps must be followed to run the compute node and test the application.
 
+### 2.1 Advanced Setup
 1. Clone the repository and go into the directory
    ```
    git clone git@github.com:hpotechius/ColorTransferLab.git
