@@ -8,18 +8,26 @@ ColorTransferLabV2 is a web-based user interface for the application of **color 
 This tool is based on WebRTC communication between the client, which is the [User Interface](https://potechius.com/ColorTransferLab), and the compute node, which applies computations using the Python library [ColorTransferLib](https://github.com/hpotechius/ColorTransferLib). This library contains available algorithms and image quality assessment metrics.
 
 ## 1. System Architecture
+![ColorTransferLabV2-Simple](https://github.com/user-attachments/assets/311b9e51-e59b-479e-8752-8e89fe8fecef)
 This system consists of four components: **Client**, **Web Server**, **Signaling Server**, and **Compute Node**, which will be explained in the following sections.
 
 ### 1.1 Client and Web Server
 The client is the user interface, served by a web server available at https://potechius.com/ColorTransferLab or self-hosted. It allows users to visualize data and connect to an available Compute Node to apply the aforementioned algorithms.
 
 ### 1.2 Signaling Server
-To connect two instances, such as the client and compute node, within this WebRTC-based setup, the signaling server announces them to each other. A list of available instances can be viewed at https://signal.potechius.com.
+<img alt="06_signalserverinterface" src="https://github.com/user-attachments/assets/bdc2bfa2-019f-4896-ae82-a7169c6e7f1d" />
+
+To connect two instances, such as the client and compute node, within this WebRTC-based setup, the signaling server announces them to each other. The server is available at https://signal.potechius.com and also displays a list of available instances when accessed via a browser.
 
 ### 1.3 Compute Node
+![computenodeinterface](https://github.com/user-attachments/assets/ddcc9b13-cee6-4af7-932d-09653d7913a0)
 This instance must be provided by the user (see Section 2: Usage). It supplies the necessary data and computational power to apply the algorithms. It is a Python instance with an installed version of ColorTransferLib.
 
-![ColorTransferLabV2-Simple](https://github.com/user-attachments/assets/311b9e51-e59b-479e-8752-8e89fe8fecef)
+The above image illustrates the three stages of the compute node:
+
+- Initial Stage: The node is only connected to the signaling server, which can also be provided by the user.
+- Waiting for Connection: After clicking the "Connect to Signaling Server" button, the compute node registers with the signaling server and enters the Idle state. The compute node now awaits a client connection to begin processing.
+- Connected Stage: Client and compute node are connected for peer-to-peer data transmission.
 
 ## 2. Usage
 ### 2.1 Minimal Setup
