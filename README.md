@@ -249,26 +249,6 @@ DESCRIPTION
 </p>
 </th>
   <tr>
-    <td width="25%"><b>Grid</b></td>
-    <td>Enables/Disables the grid on the XZ-plane in the 3D view of all renderers.</td>
-  </tr>
-  <tr>
-    <td width="25%"><b>Point size</b></td>
-    <td>Increases/Decreases the size of the vertices in the 3D view of all renderers.</td>
-  </tr>
-  <tr>
-    <td width="25%"><b>Vertex normal color</b></td>
-    <td>Replaces the vertex colors by the vertex normal values.</td>
-  </tr>
-  <tr>
-    <td width="25%"><b>Axes</b></td>
-    <td>Enables/Disables the axes in the 3D view of all renderers.</td>
-  </tr>
-  <tr>
-    <td width="25%"><b>Color Space</b></td>
-    <td>Enables/Disables the visualization of the color distribution for images and 3D point clouds.</td>
-  </tr>
-  <tr>
     <td width="25%"><b>Single View</b></td>
     <td>Toggles between the Single View of the renderer area and the simultaneous view of all three renderers — source, reference, and output.</td>
   </tr>
