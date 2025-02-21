@@ -176,12 +176,28 @@ const GaussianSplatRenderer = (props) => {
             isHistoVisible.current = false;
             isDistVisible.current = false;
 
-            // file name should be in the format "filename-ksplat.gsp"
+            // file name should be in the format "filename.ksplat.gsp"
             // gsp has to be removed and the "-" has to be replaced by "."
             let filePath_ext = props.filePath//.split(".")[0].replace("-", ".");
-            let filePath = filePath_ext.split(".")[0]
-            let fileExt = filePath_ext.split(".")[1]
+
+            let fileParts = filePath_ext.split(".")
+
+            let fileExt = fileParts[fileParts.length - 2] // ply, splat, ksplat
+            let gspExt = fileParts[fileParts.length - 1] // gsp
+
+            let filePath = filePath_ext.replace("." + fileExt + "." + gspExt, '');
+
+
             let format = null
+
+            console.log("." + fileExt + "." + gspExt)
+
+            console.log(filePath_ext)
+            console.log(fileExt)
+            console.log(gspExt)
+            console.log(filePath)
+
+
             if (fileExt === "ksplat") {
                 format = SceneFormat.KSplat
             } else if (fileExt === "splat") {
@@ -189,7 +205,7 @@ const GaussianSplatRenderer = (props) => {
             } else if (fileExt === "ply") {
                 format = SceneFormat.Ply
             } else {
-                console.error("File format not supported")
+                console.error("File format not supported: " + fileExt)
             }
 
             viewer.current.removeSplatScene(0);

@@ -28,10 +28,13 @@ export const createPreviewCard = (file_path, file_name, full_path, previews) => 
     let preview_name = $("<div/>").addClass('preview_name').html(file_name)
     let [file_name_no_ext, ext] = file_name.split(".")
 
-    const img_path = file_path + "/" + file_name_no_ext + ".png"
+    const img_path = file_path + "/" + file_name_no_ext + ".jpg"
     const bufArr = previews[img_path]
     const receivedBlob = new Blob([bufArr]);
     const image_path = URL.createObjectURL(receivedBlob);
+
+    // console.log("Image Path: ", image_path)
+
 
     let preview_img = $("<img/>").addClass('preview_img').attr("src", image_path)
 

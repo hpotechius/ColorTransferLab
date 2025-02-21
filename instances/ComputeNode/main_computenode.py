@@ -1,4 +1,11 @@
-
+"""
+Copyright 2025 by Herbert Potechius,
+Technical University of Berlin
+Faculty IV - Electrical Engineering and Computer Science - Institute of Telecommunication Systems - Communication Systems Group
+All rights reserved.
+This file is released under the "MIT License Agreement".
+Please see the LICENSE file that should have been included as part of this package.
+"""
 
 import sys
 import asyncio
@@ -20,6 +27,7 @@ import json
 import func_timeout
 import numpy as np
 import sys
+from PIL import Image
 
 
 from utils.interface import Interface
@@ -45,6 +53,43 @@ ORANGE = '\033[33m'
 GREEN = '\033[92m'
 BLUE = '\033[94m'
 RESET = '\033[0m'
+
+
+# def scale_and_convert_images(directory):
+#     # Iterate over all files in the directory and its subdirectories
+#     for root, _, files in os.walk(directory):
+#         for filename in files:
+#             if filename.lower().endswith('.png'):
+#                 file_path = os.path.join(root, filename)
+                
+#                 # Open the image
+#                 with Image.open(file_path) as img:
+#                     # Convert image to RGB if it has an alpha channel
+#                     if img.mode == 'RGBA':
+#                         img = img.convert('RGB')
+                    
+#                     # Calculate the new width to maintain the aspect ratio
+#                     width, height = img.size
+#                     new_height = 128
+#                     new_width = int((new_height / height) * width)
+                    
+#                     # Resize the image
+#                     img = img.resize((new_width, new_height), Image.LANCZOS)
+                    
+#                     # Save the image as JPG
+#                     new_filename = os.path.splitext(filename)[0] + '.jpg'
+#                     new_file_path = os.path.join(root, new_filename)
+#                     img.save(new_file_path, 'JPEG')
+                    
+#                 # Delete the original PNG file
+#                 os.remove(file_path)
+
+# # Example usage
+# directory = '/home/potechius/Code/ColorTransferLab/instances/ComputeNode/files/previews'
+# scale_and_convert_images(directory)
+# print("Images scaled and converted to JPG")
+# exit()
+
 
 
 

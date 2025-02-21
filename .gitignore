@@ -11,6 +11,7 @@ instances/ComputeNode/previews/
 instances/ComputeNode/files/data/
 instances/ComputeNode/files/previews/
 instances/ComputeNode/Models/
+instances/ComputeNode/octave-workspace/
 
 ressources/security/ca_bundle.crt
 ressources/security/certificate.crt

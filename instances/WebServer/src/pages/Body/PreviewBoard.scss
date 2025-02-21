@@ -13,9 +13,10 @@ Please see the LICENSE file that should have been included as part of this packa
     position: absolute;
     background-color: $grey;
     z-index: 999999999;
+    margin: $box_margin;
     border: solid $darkgrey $box_border;
-    width: calc(100%);
-    height: calc(100%);
+    width: calc(100% - 2 * #{$box_margin} - 2 * #{$box_border});
+    height: calc(100% - 2 * #{$box_margin} - 2 * #{$box_border});
     display: none;
     flex-wrap: wrap;
     justify-content: space-around;

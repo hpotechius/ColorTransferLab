@@ -45,3 +45,5 @@ func_timeout==4.3.5
 Flask-SocketIO
 aiortc
 aiohttp
+git+https://github.com/facebookresearch/detectron2.git
+dominate

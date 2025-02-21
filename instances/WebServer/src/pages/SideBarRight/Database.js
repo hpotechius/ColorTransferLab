@@ -204,7 +204,7 @@ export const show_files = (fold, file_path, previews) => {
             let full_path = file_path + "/" + element["name"] + ":" + file_name + ".mesh"
             // objects which are created and uploaded have no preview
             if(file_path !== "Output" && file_path !== "Uploads")
-                createPreviewCard(pathjoin(active_server, "previews", file_path), file_name, full_path, previews)
+                createPreviewCard(pathjoin(active_server, "files/previews", file_path), file_name, full_path, previews)
         }
         else if(element["name"].includes("$volumetric$")){
             let file_name = element["name"].replace("$volumetric$", "")
@@ -234,7 +234,7 @@ export const show_files = (fold, file_path, previews) => {
             let full_path = file_path + "/" + element["name"] + ":" + file_name + ".volu"
             // objects which are created and uploaded have no preview
             if(file_path !== "Output" && file_path !== "Uploads")
-                createPreviewCard(pathjoin(active_server, "previews", file_path), file_name, full_path, previews)
+                createPreviewCard(pathjoin(active_server, "files/previews", file_path), file_name, full_path, previews)
         }
         else if(element["name"].includes("$gaussiansplat$")){
             let file_name = element["name"].replace("$gaussiansplat$", "")
@@ -266,7 +266,7 @@ export const show_files = (fold, file_path, previews) => {
             let full_path = file_path + "/" + element["name"] + ":" + file_name + "-" + file_extension + ".gsp"
             // objects which are created and uploaded have no preview
             if(file_path !== "Output" && file_path !== "Uploads")
-                createPreviewCard(pathjoin(active_server, "previews", file_path), file_name, full_path, previews)
+                createPreviewCard(pathjoin(active_server, "files/previews", file_path), file_name, full_path, previews)
         }
         else if(element["name"].includes("$lightfield$")){
             let file_name = element["name"].replace("$lightfield$", "")
@@ -295,7 +295,7 @@ export const show_files = (fold, file_path, previews) => {
             let full_path = file_path + "/" + element["name"] + ":" + file_name + ".lf"
             // objects which are created and uploaded have no preview
             if(file_path !== "Output" && file_path !== "Uploads")
-                createPreviewCard(pathjoin(active_server, "previews", file_path), file_name, full_path, previews)
+                createPreviewCard(pathjoin(active_server, "files/previews", file_path), file_name, full_path, previews)
         }
     }
 
@@ -339,7 +339,7 @@ export const show_files = (fold, file_path, previews) => {
 
         // objects which are created and uploaded have no preview
         if(file_path !== "Output" && file_path !== "Uploads")
-            createPreviewCard(pathjoin(active_server, "previews", file_path), file_name, full_path, previews)
+            createPreviewCard(pathjoin(active_server, "files/previews", file_path), file_name, full_path, previews)
     }
 
     if (window.innerWidth < 1000) {

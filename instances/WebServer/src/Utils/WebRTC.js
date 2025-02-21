@@ -294,14 +294,11 @@ class WebRTC {
             iceServers: [
                 { urls: "stun:stun.l.google.com:19302" },
                 { urls: "stun:stun1.l.google.com:19302" },
-                { urls: "stun:stun2.l.google.com:19302" },
-                { urls: "stun:stun3.l.google.com:19302" },
-                { urls: "stun:stun4.l.google.com:19302" },
-                {
-                    urls: "turn:numb.viagenie.ca",
-                    username: "webrtc@live.com",
-                    credential: "muazkh"
-                }
+                // {
+                //     urls: "turn:potechius.com:3478?transport=tcp",
+                //     username: "test",
+                //     credential: "test"
+                // }
             ]
         });
 
@@ -333,13 +330,17 @@ class WebRTC {
 
         this.peerConnection.ondatachannel = (event) => {
             this.dataChannel = event.channel;
+
+
             this.dataChannel.onmessage = (event) => {
                 console.log("Received message:", event.data);
                 this.messages.push(`Received: ${event.data}`);
             };
+
         };
 
         this.dataChannel = this.peerConnection.createDataChannel("dataChannel", {
+            reliable: true,  // Ensure data is delivered reliably
             ordered: true,  // Ensure messages are delivered in order
             //maxRetransmits: -1  // Unlimited retransmissions for reliability
         });
@@ -375,7 +376,7 @@ class WebRTC {
      * 
      **************************************************************************************************************/
     async onMessage(event) {
-        console.log("Received message");
+        //console.log("Received message");
         if (typeof event.data === "string") {
             let messageString = event.data.replace(/'/g, '"');
             messageString = messageString.replaceAll("True", "true");
@@ -527,8 +528,7 @@ class WebRTC {
 
             this.receivedBuffers.push(event.data);
 
-
-            console.log("Received ArrayBuffer: " + downloadPercentage);
+            console.debug("%c[RECV] WebRTC Response from ComputeNode: Received ArrayBuffer", "color: lightblue;", downloadPercentage)
         } else {
             console.log("Received invalid message type:", event.data);
         }
@@ -542,10 +542,16 @@ class WebRTC {
 
         //this.dataChannel = this.peerConnection.createDataChannel("chat");
         this.dataChannel = this.peerConnection.createDataChannel("dataChannel", {
+            reliable: true,  // Ensure data is delivered reliably
             ordered: true,  // Ensure messages are delivered in order
             //maxRetransmits: -1,  // Unlimited retransmissions for reliability
             //maxPacketLifeTime: null // Keine Zeitbegrenzung für die Übertragung
         });
+
+        // Puffer überwachen
+        this.dataChannel.bufferedAmountLowThreshold = 64 * 1024; // 64 KB
+
+        console.log(this.peerConnection);
         this.dataChannel.onopen = () => {
             console.debug("%c[SEND] WebRTC Request to Compute Node: Set Client Information in Compute Node", "color: lightgreen;");
             let data_send = {
@@ -566,7 +572,14 @@ class WebRTC {
             this.sendMessage(JSON.stringify(data_send))
         };
         this.dataChannel.onmessage = (event) => {
+            console.log("Received message:", event.data);
             this.onMessage(event)
+        };
+
+        this.dataChannel.onbufferedamountlow = () => {
+            console.log("Puffer hat wieder Platz, sende Resume-Signal an Python");
+            //readyToReceive = true;
+            //sendResumeSignalToPython();
         };
 
         this.dataChannel.onclose = () => {

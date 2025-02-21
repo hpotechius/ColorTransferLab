@@ -24,7 +24,7 @@ class MainWindow(QMainWindow):
     # ------------------------------------------------------------------------------------------------------------------
     def __init__(self, main_server=None, signal_server=None):
         super().__init__()
-        self.setWindowTitle("ColorTransferLab - ComputeNode - Version 1.0.0")
+        self.setWindowTitle("ColorTransferLabV2 - ComputeNode - Version 1.0.0")
         self.setGeometry(100, 100, 500, 700)
         self.setFixedSize(500, 800)  # Setzt die feste Größe des Fensters
         self.center()

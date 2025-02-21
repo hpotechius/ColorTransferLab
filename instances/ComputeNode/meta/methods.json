@@ -225,6 +225,48 @@
             "datatypes": ["Image"],
             "local": false,
             "enabled": true
+        },
+        {
+            "name": "ColorFormer",
+            "key": "CFM",
+            "type": "Colorization",
+            "author": "Xiaozhong Ji, Boyuan Jiang, Donghao Luo, Guangpin Tao, Wenqing Chu, Zhifeng Xie, Chengjie Wang",
+            "year": 2022,
+            "publication": "ColorFormer: Image Colorization via Color Memory Assisted Hybrid-Attention Transformer",
+            "doi": "https://doi.org/10.1007/978-3-031-19787-1_2",
+            "scientificVenue": "European Conference on Computer Vision (ECCV)",
+            "abstract": "Automatic image colorization is a challenging task that attracts a lot of research interest. Previous methods employing deep neural networks have produced impressive results. However, these colorization images are still unsatisfactory and far from practical applications. The reason is that semantic consistency and color richness are two key elements ignored by existing methods. In this work, we propose an automatic image colorization method via color memory assisted hybrid-attention transformer, namely ColorFormer. Our network consists of a transformer-based encoder and a color memory decoder. The core module of the encoder is our proposed global-local hybrid attention operation, which improves the ability to capture global receptive field dependencies. With the strong power to model contextual semantic information of grayscale image in different scenes, our network can produce semantic-consistent colorization results. In decoder part, we design a color memory module which stores various semantic-color mapping for image-adaptive queries. The queried color priors are used as reference to help the decoder produce more vivid and diverse results. Experimental results show that our method can generate more realistic and semantically matched color images compared with state-of-the-art methods. Moreover, owing to the proposed end-to-end architecture, the inference speed reaches 40 FPS on a V100 GPU, which meets the real-time requirement.",
+            "datatypes": ["Image"],
+            "local": false,
+            "enabled": true
+        },
+        {
+            "name": "StyTr2",
+            "key": "ST2",
+            "type": "Style Transfer",
+            "author": "Yingying Deng, Fan Tang, Weiming Dong, Chongyang Ma, Xingjia Pan, Lei Wang, Changsheng Xu",
+            "year": 2022,
+            "publication": "StyTr2: Image Style Transfer with Transformers",
+            "doi": "https://doi.org/10.48550/arXiv.2105.14576",
+            "scientificVenue": "CVPR",
+            "abstract": "The goal of image style transfer is to render an image with artistic features guided by a style reference while maintaining the original content. Owing to the locality in convolutional neural networks (CNNs), extracting and maintaining the global information of input images is difficult. Therefore, traditional neural style transfer methods face biased content representation. To address this critical issue, we take long-range dependencies of input images into account for image style transfer by proposing a transformer-based approach called StyTr2. In contrast with visual transformers for other vision tasks, StyTr2 contains two different transformer encoders to generate domain-specific sequences for content and style, respectively. Following the encoders, a multi-layer transformer decoder is adopted to stylize the content sequence according to the style sequence. We also analyze the deficiency of existing positional encoding methods and propose the content-aware positional encoding (CAPE), which is scale-invariant and more suitable for image style transfer tasks. Qualitative and quantitative experiments demonstrate the effectiveness of the proposed StyTr2 compared with state-of-the-art CNN-based and flow-based approaches. Code and models are available at this https URL.",
+            "datatypes": ["Image", "Mesh", "Video", "VolumetricVideo", "LightField"],
+            "local": false,
+            "enabled": true
+        },
+        {
+            "name": "Instance-aware Image Colorization",
+            "key": "IIC",
+            "type": "Colorization",
+            "author": "Jheng-Wei Su, Hung-Kuo Chu, Jia-Bin Huang",
+            "year": 2020,
+            "publication": "Instance-aware Image Colorization",
+            "doi": "https://doi.org/10.48550/arXiv.2005.10825",
+            "scientificVenue": "CVPR",
+            "abstract": "Image colorization is inherently an ill-posed problem with multi-modal uncertainty. Previous methods leverage the deep neural network to map input grayscale images to plausible color outputs directly. Although these learning-based methods have shown impressive performance, they usually fail on the input images that contain multiple objects. The leading cause is that existing models perform learning and colorization on the entire image. In the absence of a clear figure-ground separation, these models cannot effectively locate and learn meaningful object-level semantics. In this paper, we propose a method for achieving instance-aware colorization. Our network architecture leverages an off-the-shelf object detector to obtain cropped object images and uses an instance colorization network to extract object-level features. We use a similar network to extract the full-image features and apply a fusion module to full object-level and image-level features to predict the final colors. Both colorization networks and fusion modules are learned from a large-scale dataset. Experimental results show that our work outperforms existing methods on different quality metrics and achieves state-of-the-art performance on image colorization.",
+            "datatypes": ["Image"],
+            "local": false,
+            "enabled": true
         }
     ]
 }

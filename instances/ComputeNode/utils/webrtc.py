@@ -1,3 +1,12 @@
+"""
+Copyright 2025 by Herbert Potechius,
+Technical University of Berlin
+Faculty IV - Electrical Engineering and Computer Science - Institute of Telecommunication Systems - Communication Systems Group
+All rights reserved.
+This file is released under the "MIT License Agreement".
+Please see the LICENSE file that should have been included as part of this package.
+"""
+
 from aiortc import RTCPeerConnection, RTCSessionDescription, RTCIceServer, RTCDataChannel, RTCConfiguration, RTCIceCandidate
 import asyncio
 import requests
@@ -11,12 +20,12 @@ from PIL import Image as PILImage
 import sys
 
 from ColorTransferLib.ColorTransfer import ColorTransfer, ColorTransferEvaluation
-from ColorTransferLib.MeshProcessing.Mesh import Mesh
+from ColorTransferLib.DataTypes.Mesh import Mesh
 from ColorTransferLib.DataTypes.GaussianSplatting import GaussianSplatting
 from ColorTransferLib.DataTypes.LightField import LightField
-from ColorTransferLib.MeshProcessing.VolumetricVideo import VolumetricVideo
-from ColorTransferLib.ImageProcessing.Image import Image
-from ColorTransferLib.ImageProcessing.Video import Video
+from ColorTransferLib.DataTypes.VolumetricVideo import VolumetricVideo
+from ColorTransferLib.DataTypes.Image import Image
+from ColorTransferLib.DataTypes.Video import Video
 from utils.utils import Utils
 
 # ORANGE = '\033[33m'
@@ -42,8 +51,8 @@ class WebRTCClient:
         self.message = "X"
         self.reset_peer_connection()
         self.chunk_size = 1048576 # 1MB 
-        #self.chunk_size = 16000 # 16KB 
-        #self.chunk_size = 10485760
+        #self.chunk_size = 16384 # 16KB 
+        #self.chunk_size = 1024 * 64 # 64KB
 
         self.connected_cl = ""
 
@@ -62,7 +71,13 @@ class WebRTCClient:
     # ------------------------------------------------------------------------------------------------------------------
     def reset_peer_connection(self):
         ice_servers = [
-            RTCIceServer(urls="stun:stun.l.google.com:19302")  # Google's public STUN server
+            RTCIceServer(urls="stun:stun.l.google.com:19302"),
+            RTCIceServer(urls="stun:stun1.l.google.com:19302"),
+            # RTCIceServer(
+            #     urls=["turn:potechius.com:3478?transport=tcp"],
+            #     username="test",
+            #     credential="test"
+            # )
         ]
 
         self.pc = RTCPeerConnection(RTCConfiguration(iceServers=ice_servers))
@@ -166,12 +181,10 @@ class WebRTCClient:
     # ------------------------------------------------------------------------------------------------------------------
     async def create_offer(self, target):
         print("Creating offer...")
-        self.channel = self.pc.createDataChannel("chat", 
-                                                {
-                                                    "reliable": True,
-                                                    # "ordered": True,  # Ensure messages are delivered in order
-                                                    # "maxRetransmits": -1  # Unlimited retransmissions for reliability
-            })
+        self.channel = self.pc.createDataChannel("dataChannel", 
+                                                 reliable=True,
+                                                 ordered=True,  # Ensure messages are delivered in order
+            )
         self.channel.on("open", self.on_channel_open)
         self.channel.on("message", lambda message: asyncio.create_task(self.on_message(message)))
 
@@ -304,20 +317,27 @@ class WebRTCClient:
     # ------------------------------------------------------------------------------------------------------------------
     async def sendFileChunks(self, filepath, ext):
         self.send_datachannel_message(str({"message": "fileTransferStart","data" :ext}))
+        # total_chunks = 0
+        # total_size = 0
         with open(filepath, "rb") as file:
             while True:
                 chunk = file.read(self.chunk_size)
                 if not chunk:
                     break
-                self.send_datachannel_message(chunk)
+                self.send_datachannel_message(chunk)  
+
+                # total_chunks += 1
+                # total_size += len(chunk)
+                # print(f"Sent chunk {total_chunks} of size {len(chunk)} bytes")
                 await asyncio.sleep(0.01)  
         self.send_datachannel_message(str({"message": "fileTransferEnd","data" :""}))
+        # exit()
 
     # ------------------------------------------------------------------------------------------------------------------
     # 
     # ------------------------------------------------------------------------------------------------------------------
     async def sendImageFiles(self, data_recv):
-        filepath = path.join("data", data_recv)
+        filepath = path.join("files/data", data_recv)
         # TODO: Can also be jpg
         await self.sendFileChunks(filepath, "png")
 
@@ -325,14 +345,14 @@ class WebRTCClient:
     # 
     # ------------------------------------------------------------------------------------------------------------------
     async def sendVideoFiles(self, data_recv):
-        filepath = path.join("data", data_recv)
+        filepath = path.join("files/data", data_recv)
         await self.sendFileChunks(filepath, "mp4")
 
     # ------------------------------------------------------------------------------------------------------------------
     # 
     # ------------------------------------------------------------------------------------------------------------------
     async def sendPointCloudFiles(self, data_recv):
-        filepath = path.join("data", data_recv)
+        filepath = path.join("files/data", data_recv)
         await self.sendFileChunks(filepath, "ply")
     # ------------------------------------------------------------------------------------------------------------------
     # 
@@ -341,15 +361,15 @@ class WebRTCClient:
         filepath_wo_gsp = data_recv.split(".")[0]
         filepath_wo_ext = filepath_wo_gsp.split("-")[0]
         filepath_ext = filepath_wo_gsp.split("-")[1]
-        filepath = path.join("data", filepath_wo_ext + "." + filepath_ext)
+        filepath = path.join("files/data", filepath_wo_ext + "." + filepath_ext)
         await self.sendFileChunks(filepath, filepath_ext)
     # ------------------------------------------------------------------------------------------------------------------
     # 
     # ------------------------------------------------------------------------------------------------------------------
     async def sendLightFieldFiles(self, data_recv):
         filepath_wo_lf = data_recv.split(".")[0]
-        filepath = path.join("data", filepath_wo_lf + ".mp4")
-        metapath = path.join("data", filepath_wo_lf + ".json")
+        filepath = path.join("files/data", filepath_wo_lf + ".mp4")
+        metapath = path.join("files/data", filepath_wo_lf + ".json")
 
         await self.sendFileChunks(metapath, "json")
         await self.sendFileChunks(filepath, "mp4")
@@ -360,9 +380,9 @@ class WebRTCClient:
     async def sendMeshFiles(self, data_recv):
         Utils.printINFO(f"Preparing Container: {data_recv}", self.window)
         filepath_wo_mesh = data_recv.split(".")[0]
-        objpath = path.join("data", filepath_wo_mesh + ".obj")
-        mtlpath = path.join("data", filepath_wo_mesh + ".mtl")
-        pngpath = path.join("data", filepath_wo_mesh + ".png")
+        objpath = path.join("files/data", filepath_wo_mesh + ".obj")
+        mtlpath = path.join("files/data", filepath_wo_mesh + ".mtl")
+        pngpath = path.join("files/data", filepath_wo_mesh + ".png")
 
         await self.sendFileChunks(pngpath, "png")
         await self.sendFileChunks(mtlpath, "mtl")
@@ -373,7 +393,7 @@ class WebRTCClient:
     async def sendVolumetricVideoFiles(self, data_recv):
         #print(data_recv)
         filepath_wo_volu = data_recv.split(".")[0]
-        jsonpath = path.join("data", filepath_wo_volu + ".json")
+        jsonpath = path.join("files/data", filepath_wo_volu + ".json")
 
         jsondata = Utils.read_json_file(jsonpath)
         num_frames = jsondata["num_frames"]
@@ -383,9 +403,9 @@ class WebRTCClient:
         for i in range(num_frames):
             formatted_i = str(i).zfill(5)
 
-            objpath = path.join("data", filepath_wo_volu + "_" + formatted_i + ".obj")
-            mtlpath = path.join("data", filepath_wo_volu + "_" + formatted_i + ".mtl")
-            pngpath = path.join("data", filepath_wo_volu + "_" + formatted_i + ".jpg")
+            objpath = path.join("files/data", filepath_wo_volu + "_" + formatted_i + ".obj")
+            mtlpath = path.join("files/data", filepath_wo_volu + "_" + formatted_i + ".mtl")
+            pngpath = path.join("files/data", filepath_wo_volu + "_" + formatted_i + ".jpg")
 
             await self.sendFileChunks(pngpath, "png")
             await self.sendFileChunks(mtlpath, "mtl")
@@ -396,28 +416,28 @@ class WebRTCClient:
     # ------------------------------------------------------------------------------------------------------------------
     def get_container_size(self, abs_path, container_type):
         if container_type == "Image" or container_type == "Video" or container_type == "PointCloud":
-            filepath = path.join("data", abs_path)
+            filepath = path.join("files/data", abs_path)
             file_size = os.path.getsize(filepath)
         elif container_type == "GaussianSplatting":
             filepath_wo_gsp = abs_path.split(".")[0]
             filepath_wo_ext = filepath_wo_gsp.split("-")[0]
             filepath_ext = filepath_wo_gsp.split("-")[1]
-            filepath = path.join("data", filepath_wo_ext + "." + filepath_ext)
+            filepath = path.join("files/data", filepath_wo_ext + "." + filepath_ext)
             file_size = os.path.getsize(filepath)
         elif container_type == "LightField":
             filepath_wo_lf = abs_path.split(".")[0]
-            filepath = path.join("data", filepath_wo_lf + ".mp4")
-            metapath = path.join("data", filepath_wo_lf + ".json")
+            filepath = path.join("files/data", filepath_wo_lf + ".mp4")
+            metapath = path.join("files/data", filepath_wo_lf + ".json")
             file_size = os.path.getsize(filepath) + os.path.getsize(metapath)
         elif container_type == "Mesh":
             filepath_wo_mesh = abs_path.split(".")[0]
-            objpath = path.join("data", filepath_wo_mesh + ".obj")
-            mtlpath = path.join("data", filepath_wo_mesh + ".mtl")
-            pngpath = path.join("data", filepath_wo_mesh + ".png")
+            objpath = path.join("files/data", filepath_wo_mesh + ".obj")
+            mtlpath = path.join("files/data", filepath_wo_mesh + ".mtl")
+            pngpath = path.join("files/data", filepath_wo_mesh + ".png")
             file_size = os.path.getsize(objpath) + os.path.getsize(mtlpath) + os.path.getsize(pngpath)
         elif container_type == "VolumetricVideo":
             filepath_wo_volu = abs_path.split(".")[0]
-            jsonpath = path.join("data", filepath_wo_volu + ".json")
+            jsonpath = path.join("files/data", filepath_wo_volu + ".json")
 
             jsondata = Utils.read_json_file(jsonpath)
             num_frames = jsondata["num_frames"]
@@ -426,9 +446,9 @@ class WebRTCClient:
             for i in range(num_frames):
                 formatted_i = str(i).zfill(5)
 
-                objpath = path.join("data", filepath_wo_volu + "_" + formatted_i + ".obj")
-                mtlpath = path.join("data", filepath_wo_volu + "_" + formatted_i + ".mtl")
-                pngpath = path.join("data", filepath_wo_volu + "_" + formatted_i + ".jpg")
+                objpath = path.join("files/data", filepath_wo_volu + "_" + formatted_i + ".obj")
+                mtlpath = path.join("files/data", filepath_wo_volu + "_" + formatted_i + ".mtl")
+                pngpath = path.join("files/data", filepath_wo_volu + "_" + formatted_i + ".jpg")
 
                 file_size += os.path.getsize(pngpath) + os.path.getsize(mtlpath) + os.path.getsize(objpath)
         else:
@@ -518,15 +538,15 @@ class WebRTCClient:
     # 
     # ------------------------------------------------------------------------------------------------------------------
     async def handlerColorTransfer(self, data_recv):
-        src_path = os.path.join("data", data_recv["source"])
+        src_path = os.path.join("files/data", data_recv["source"])
 
         ref_type = data_recv["reference"]["type"]
         if ref_type == "Single Input":
-            ref_path = os.path.join("data", data_recv["reference"]["value"])
+            ref_path = os.path.join("files/data", data_recv["reference"]["value"])
             print("Single Input")
         elif ref_type == "Color Theme":
             ref_colors= data_recv["reference"]["value"]
-            ref_path = os.path.join("data/Output", "color_theme_image.png")
+            ref_path = os.path.join("files/data/Output", "color_theme_image.png")
             self.createRefColorThemeImage(ref_colors, ref_path)
             print("Color Theme")
 
@@ -537,7 +557,7 @@ class WebRTCClient:
         method_options = data_recv["options"]
 
         file_src_extension = src_path.split(".")[1]
-        if ref_path != "data/":
+        if ref_path != "files/data/":
             file_ref_extension = ref_path.split(".")[1]
         else:
             file_ref_extension = "empty"
@@ -545,7 +565,7 @@ class WebRTCClient:
         print(file_ref_extension)
 
         # output_path = os.path.join("data", data_recv["output"] + "." + file_src_extension)
-        output_path_wo_ext = os.path.join("data", data_recv["output"])
+        output_path_wo_ext = os.path.join("files/data", data_recv["output"])
         print(output_path_wo_ext)
 
         
@@ -556,7 +576,7 @@ class WebRTCClient:
             src = Mesh(file_path=src_path, datatype="PointCloud")
             abs_path = data_recv["output"] + "." + file_src_extension
         elif file_src_extension == "mp4":
-            src = Video(file_path=src_path,)
+            src = Video(file_path=src_path)
             abs_path = data_recv["output"] + "." + file_src_extension
         elif file_src_extension == "mesh":
             # remove .mesh from file name
@@ -566,7 +586,7 @@ class WebRTCClient:
             print(obj_src_path)
             # construct new output path
             filename = data_recv["output"].split("/")[-1]
-            output_folder = os.path.join("data/Output", "$mesh$" + filename)
+            output_folder = os.path.join("files/data/Output", "$mesh$" + filename)
             os.makedirs(output_folder, exist_ok=True)
             output_path_wo_ext = os.path.join(output_folder,filename)
             src = Mesh(file_path=obj_src_path, datatype="Mesh")
@@ -580,7 +600,7 @@ class WebRTCClient:
 
             # construct new output path
             filename = data_recv["output"].split("/")[-1]
-            output_folder = os.path.join("data/Output", "$gaussiansplat$" + filename)
+            output_folder = os.path.join("files/data/Output", "$gaussiansplat$" + filename)
             os.makedirs(output_folder, exist_ok=True)
             output_path_wo_ext = os.path.join(output_folder, filename)
             abs_path = "Output/" + "$gaussiansplat$" + filename + "/" + filename + "-splat.gsp"
@@ -593,7 +613,7 @@ class WebRTCClient:
             print(obj_src_path)
             # construct new output path
             filename = data_recv["output"].split("/")[-1]
-            output_folder = os.path.join("data/Output", "$lightfield$" + filename)
+            output_folder = os.path.join("files/data/Output", "$lightfield$" + filename)
             os.makedirs(output_folder, exist_ok=True)
             output_path_wo_ext = os.path.join(output_folder,filename)
 
@@ -604,7 +624,7 @@ class WebRTCClient:
                 grid_width = lightfield_meta["grid_width"]
                 grid_height = lightfield_meta["grid_height"]
             
-            json_out_path = "data/Output/" + "$lightfield$" + filename + "/" + filename + ".json"
+            json_out_path = "files/data/Output/" + "$lightfield$" + filename + "/" + filename + ".json"
             with open(json_out_path, 'w') as json_file:
                 json.dump(lightfield_meta, json_file, indent=4)
 
@@ -622,10 +642,10 @@ class WebRTCClient:
             input_folder = os.path.dirname(src_path)
 
             filename = data_recv["output"].split("/")[-1]
-            output_folder = os.path.join("data/Output", "$volumetric$" + filename)
+            output_folder = os.path.join("files/data/Output", "$volumetric$" + filename)
             os.makedirs(output_folder, exist_ok=True)
             # output_path_wo_ext = os.path.join(output_folder,filename)
-            output_path_wo_ext = os.path.join("data/Output", filename)
+            output_path_wo_ext = os.path.join("files/data/Output", filename)
 
             # read volumetric meta data
             json_path = src_path_wo_ext + ".json"
@@ -633,7 +653,7 @@ class WebRTCClient:
                 volumetric_meta = json.load(f)
                 num_frames = volumetric_meta["num_frames"]
             
-            json_out_path = "data/Output/" + "$volumetric$" + filename + "/" + filename + ".json"
+            json_out_path = "files/data/Output/" + "$volumetric$" + filename + "/" + filename + ".json"
             with open(json_out_path, 'w') as json_file:
                 json.dump(volumetric_meta, json_file, indent=4)
 
@@ -670,11 +690,11 @@ class WebRTCClient:
         # output = ct.apply()
         # try:
         try:
-            output = func_timeout.func_timeout(60, ct.apply, args=(), kwargs=None)
+            output = func_timeout.func_timeout(180, ct.apply, args=(), kwargs=None)
         except func_timeout.FunctionTimedOut:
             output = {
                 "status_code": -1,
-                "response": "The algorithm took longer than 60 seconds to process. The process was aborted.",
+                "response": "The algorithm took longer than 180 seconds to process. The process was aborted.",
                 "object": None,
                 "process_time": 0
             }
@@ -773,6 +793,11 @@ class WebRTCClient:
             if command_recv == "dbStructure":
                 db_structure = Utils.get_database_structure()
 
+                db_structure_str = json.dumps(db_structure)
+                db_structure_size = sys.getsizeof(db_structure_str)
+                # Ausgabe der Größe von db_structure
+                print(f"Size of db_structure: {db_structure_size} bytes")
+
                 # # Größe des Objekts selbst
                 # size_in_bytes = sys.getsizeof(db_structure)
                 # print(f"Größe von db_structure (Objekt selbst): {size_in_bytes} Bytes")
@@ -832,11 +857,13 @@ class WebRTCClient:
                 Utils.printSEND(f"Sending previews images.", self.window)
 
                 self.send_datachannel_message(str({"message": "previewsTransferStart","data" : ""}))
-                # for preview in preview_structure:
-                #     print(f"{GREEN}[SEND] Sending preview image: {preview}.{RESET}")
-                #     self.send_datachannel_message(str({"message": "previewfileTransferStart","data" : preview}))
-                #     await self.sendFileChunks(preview, "png")
-                #     self.send_datachannel_message(str({"message": "previewfileTransferEnd","data" : ""}))
+
+                for preview in preview_structure:
+                    Utils.printSEND(f"Sending preview image: {preview}", self.window)
+                    self.send_datachannel_message(str({"message": "previewfileTransferStart","data" : preview}))
+                    await self.sendFileChunks(preview, "jpg")
+                    self.send_datachannel_message(str({"message": "previewfileTransferEnd","data" : ""}))
+
                 self.send_datachannel_message(str({"message": "previewsTransferEnd","data" : ""}))
                 Utils.printSEND(f"Sending preview images done.", self.window)
 
@@ -903,7 +930,8 @@ class WebRTCClient:
                 Utils.printRECV(f"Client requests evaluation via: {command_recv} for metric: {data_recv}.", self.window)
                 await self.handlerEvaluation(data_recv)
             else:
-                Utils.printRECV(f"Invalid received message: {message}.", self.window)
+                Utils.printRECV(f"Invalid received message.", self.window)
+                # Utils.printRECV(f"Invalid received message: {message}.", self.window)
 
     # ------------------------------------------------------------------------------------------------------------------
     # 
@@ -911,7 +939,6 @@ class WebRTCClient:
     def send_datachannel_message(self, message):
         if self.channel and self.channel.readyState == "open":
             print("Sending message")
-            #print(f"Sending message: {message}")
             self.channel.send(message)
         else:
             print("DataChannel is not open yet.")

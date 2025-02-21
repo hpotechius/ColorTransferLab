@@ -131,34 +131,43 @@ function Console() {
             source_type = "GaussianSplatting"
         else{
             consolePrint("WARNING", "The selected source file type is not supported yet.")
+            // TEMPORARY
+            const out_dat = {
+                "command": "/test",
+                "data": "x".repeat(1024 * 10)
+            }
+            WebRTCConnection.sendMessage(JSON.stringify(out_dat))
             return
         }
 
-
-        const reference_ext = execution_data["reference"].split('.').pop()
         let reference_type
-        if (reference_ext === "png")
+        if(active_reference === "Single Input") {
+            const reference_ext = execution_data["reference"].split('.').pop()
+            if (reference_ext === "png")
+                reference_type = "Image"
+            else if (reference_ext === "ply")
+                reference_type = "PointCloud"
+            else if (reference_ext === "mesh")
+                reference_type = "Mesh"
+            else if (reference_ext === "mp4")
+                reference_type = "Video"
+            else if (reference_ext === "lf")
+                reference_type = "LightField"
+            else if (reference_ext === "volu")
+                reference_type = "VolumetricVideo"
+            else if (reference_ext === "gsp")
+                reference_type = "GaussianSplatting"
+            else{
+                // if(transfer_type !== "Colorization"){
+                consolePrint("WARNING", "The selected reference file type is not supported yet.")
+                return
+                // } else {
+                //     // set reference type to image if the selected approach is colorization in order to bypass the compatibility check
+                //     reference_type = "Image"
+                // }
+            }
+        } else {
             reference_type = "Image"
-        else if (reference_ext === "ply")
-            reference_type = "PointCloud"
-        else if (reference_ext === "mesh")
-            reference_type = "Mesh"
-        else if (reference_ext === "mp4")
-            reference_type = "Video"
-        else if (reference_ext === "lf")
-            reference_type = "LightField"
-        else if (reference_ext === "volu")
-            reference_type = "VolumetricVideo"
-        else if (reference_ext === "gsp")
-            reference_type = "GaussianSplatting"
-        else{
-            // if(transfer_type !== "Colorization"){
-            consolePrint("WARNING", "The selected reference file type is not supported yet.")
-            return
-            // } else {
-            //     // set reference type to image if the selected approach is colorization in order to bypass the compatibility check
-            //     reference_type = "Image"
-            // }
         }
 
         // Check if the selected approach is compatible with the selected source and reference

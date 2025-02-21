@@ -8,6 +8,7 @@ import signal
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+import threading
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*", ping_timeout=600, ping_interval=30)
@@ -133,7 +134,6 @@ def on_message(data):
             smtp_server = "123"
             smtp_user = "123"
             smtp_password = "123"
-
 
             # Send the feedback email
             send_email(subject, body, to_email, from_email, smtp_server, smtp_port, smtp_user, smtp_password)
@@ -291,6 +291,32 @@ def send_email(subject, body, to_email, from_email, smtp_server, smtp_port, smtp
         print(f"Error sending email: {e}")
 
 # ------------------------------------------------------------------------------------------------------------------
+# Function to check and remove instances with an uptime of 10 minutes or more
+# ------------------------------------------------------------------------------------------------------------------
+def remove_old_instances():
+    while True:
+        current_time = time.time()
+        ten_minutes = 10 * 60  # 10 minutes in seconds
+
+        # Check and remove old client instances
+        for client_id, client_data in list(client_instances.items()):
+            if current_time - client_data["register_time"] >= ten_minutes:
+                print(f"{ORANGE}[INFO] Removing old client instance: {client_id}{RESET}")
+                del client_instances[client_id]
+
+        # Check and remove old compute node instances
+        for computenode_id, computenode_data in list(computenode_instances.items()):
+            if current_time - computenode_data["register_time"] >= ten_minutes:
+                print(f"{ORANGE}[INFO] Removing old compute node instance: {computenode_id}{RESET}")
+                del computenode_instances[computenode_id]
+
+        # Emit the updated list of clients and compute nodes to the interface
+        socketio.emit('update_clients', {**client_instances, **computenode_instances})
+
+        # Sleep for a minute before checking again
+        time.sleep(60)
+
+# ------------------------------------------------------------------------------------------------------------------
 # Main entry point for the Signal Server
 # ------------------------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
@@ -312,6 +338,11 @@ if __name__ == "__main__":
                         starttime REAL)''')
     CONN.commit()
     CONN.close()
+
+    # Start the thread to remove old instances
+    thread = threading.Thread(target=remove_old_instances)
+    thread.daemon = True
+    thread.start()
     
     print(f"{ORANGE}[INFO] Starting Signal Server{RESET}")
     socketio.run(app, host="0.0.0.0", port=8071, allow_unsafe_werkzeug=True)

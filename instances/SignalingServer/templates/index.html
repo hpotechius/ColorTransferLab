@@ -9,6 +9,20 @@
             document.addEventListener("DOMContentLoaded", function() {
                 var socket = io();
 
+                function updateUptime() {
+                    var rows = document.querySelectorAll('#clientsTable tbody tr');
+                    rows.forEach(function(row) {
+                        var registerTime = row.getAttribute('data-register-time');
+                        var uptimeCell = row.querySelector('.uptime');
+                        var diff = Math.floor(Date.now() / 1000) - registerTime;
+                        var days = Math.floor(diff / 86400).toString().padStart(2, '0');
+                        var hours = Math.floor((diff % 86400) / 3600).toString().padStart(2, '0');
+                        var minutes = Math.floor((diff % 3600) / 60).toString().padStart(2, '0');
+                        var seconds = Math.round(diff % 60).toString().padStart(2, '0');
+                        uptimeCell.textContent = days + "d " + hours + "h " + minutes + "m " + seconds + "s";
+                    });
+                }
+
                 socket.on('update_clients', function(clients) {
                     var tbody = document.querySelector('#clientsTable tbody');
                     tbody.innerHTML = '';
@@ -17,6 +31,7 @@
                         var connected_cl = client.connected_cl
                         var connected_db = client.connected_db
                         var row = document.createElement('tr');
+                        row.setAttribute('data-register-time', client.register_time);
                         var id_out = "";
                         if(client.type === "Client") {
                             id_out = "<b>Client: " + cid + "</b><br>ComputeNode: " + connected_db;
@@ -30,19 +45,24 @@
                             <td>${id_out}</td>
                             <td>${client.ip_address}</td>
                             <td>${client.country}</td>
-                            <td>00d 00h 00m 00s</td>
+                            <td class="uptime">00d 00h 00m 00s</td>
                             <td><span class="type-box type-${client.type}"><b>${client.type}</b></span></td>
                             <td><span class="status-box status-${client.status}"><b>${client.status}</b></span></td>
                         `;
                         tbody.appendChild(row);
                     }
+                    updateUptime();
                 });
+
+                // Update uptime every second
+                setInterval(updateUptime, 1000);
             });
         </script>
     </head>
     <body>
         <h1>ColorTransferLabV2 - Signaling Server</h1>
         <p><b>WebRTC Signaling Server</b>: https://signal.potechius.com</p>
+        <p><b>Note</b>: All instances are automatically deleted after running for 10 minutes.</p>
         <table id="clientsTable">
             <thead>
                 <tr>
@@ -57,7 +77,7 @@
             </thead>
             <tbody>
                 {% for cid, client in clients.items() %}
-                    <tr>
+                    <tr data-register-time="{{ client.register_time }}">
                         <td>{{ client.name }}</td>
                         <!-- <td>{{ cid }}<br>DB: ...<br>CE: ...</td> -->
                         <td>
@@ -76,7 +96,7 @@
                         </td>
                         <td>{{ client.ip_address }}</td>
                         <td>{{ client.country }}</td>
-                        <td>
+                        <td class="uptime">
                             <script>
                             var diff = Math.floor(Date.now() / 1000) - {{ client.register_time }};
                             var days = Math.floor(diff / 86400).toString().padStart(2, '0');

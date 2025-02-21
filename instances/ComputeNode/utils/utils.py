@@ -1,4 +1,3 @@
-
 import json
 import importlib.util
 import os
@@ -111,7 +110,7 @@ class Utils:
     # ----------------------------------------------------------------------------------------------------------------------
     def get_database_structure():
         out = []
-        path = "data"
+        path = "files/data"
 
         def get_directory_content(p, arr, name):
             directory_contents = os.listdir(p)
@@ -134,7 +133,7 @@ class Utils:
     # ----------------------------------------------------------------------------------------------------------------------
     def get_preview_structure():
         out = []
-        path = "previews"
+        path = "files/previews"
 
         def get_directory_content(p, arr, name):
             directory_contents = os.listdir(p)
@@ -217,5 +216,6 @@ class Utils:
                 await loop.run_in_executor(pool, Utils.download_file, url, local_filename, window.update_progress_bar)
                 Utils.printINFO(f"Database extracted to {absolute_folder_path}", window)
                 await loop.run_in_executor(pool, Utils.extract_zip_file, local_filename, absolute_folder_path)
+                os.remove(local_filename)  # Delete the zip file after extraction
         else:
             window.progress_bar.hide()
