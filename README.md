@@ -210,6 +210,10 @@ DESCRIPTION
     <td>By clicking on this button the user can select an image which will be uploaded to the database. The uploaded object will be availabe in the `Items`-Area after clicking the `Uploads`-Button in the `Database`-Area.</td>
   </tr>
   <tr>
+    <td><b>Evaluation</b></td>
+    <td>By clicking this button, the evaluation of the output against the source and reference will be performed. This feature is only available for image-to-image color transfer.</td>
+  </tr>
+  <tr>
     <td><b>Start</b></td>
     <td>By clicking on this button the user starts the color transfer process. The resulting object will be displayed in the `Output`-Renderer. This only works if both a source and a reference object are selected and a color transfer algorithm was chosen.</td>
   </tr>
