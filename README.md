@@ -24,11 +24,11 @@ The system's main purpose is color transfer application and evaluation, achieved
 ## 2. Initialization
 TODO
 
-## 2. Datatypes
+## 3. Datatypes
 
 ![414768853-3852256a-8547-4a36-be63-82f064d9f9b5](https://github.com/user-attachments/assets/67b370aa-e218-4a11-a986-8c4c42c0b9c8)
 
-## 3. Interface
+## 4. Interface
 
 <table>
 <th align="center">
@@ -272,26 +272,27 @@ DESCRIPTION
 
 --- 
 
-## List of other Color Transfer Tools
+## 5. List of other Color Transfer Tools
 - [Palette-based Photo Recoloring](https://recolor.cs.princeton.edu/demo/index.html)
 - [L2 Divergence for robust colour transfer: Demo](https://colourtransferdemo.scss.tcd.ie/colourTransferDemo.html)
 - [A Web App Implementation for Image Colour Transfer](https://www.dustfreesolutions.com/CT/CT.html)
 - [Photo Recoloring](http://b-z.github.io/photo_recoloring/)
+- Adobe Photoshop's Color Transfer neural filter
 
 ---
 
-## Ressources 
+## 6. Ressources 
 ...
 
 --- 
 
-## Acknowledgements
+## 7. Acknowledgements
 - The light field renderer is adapted from [hypothete's lightfield-webgl2 repository](https://github.com/hypothete/lightfield-webgl2).
 - Gaussian Splatting renderer is adapted from [mkkellogg's GaussianSplats3D repository](https://github.com/mkkellogg/GaussianSplats3D)
 
 --- 
 
-## Citation
+## 8. Citation
 If you utilize this code in your research, kindly provide a citation:
 ```
 @inproceeding{potechius2023,
