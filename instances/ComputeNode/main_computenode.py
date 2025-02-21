@@ -98,7 +98,7 @@ RESET = '\033[0m'
 # ----------------------------------------------------------------------------------------------------------------------
 async def main_server(window=None):
 
-    # Utils.download_and_extract(window)
+    Utils.download_and_extract(window)
 
     client = WebRTCClient(
         signal_server=window.signal_server,

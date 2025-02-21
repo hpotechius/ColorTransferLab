@@ -66,7 +66,16 @@ In this setup, the signaling server is provided via https://signal.potechius.com
    - The Compute Node should now appear in the Compute Node section of the web interface. Press the button to view all available algorithms and data.
 
 ### 2.2 Easy Setup
-...
+1. Run the script to be guided through the installation process.
+   ```
+   cd ressources/scripts
+   chmod +x runComputeNode.sh
+   ./runComputeNode.sh
+   ```
+2. After running the script for the first time, all installation steps can be skipped by using the --run parameter.
+   ```
+   ./runComputeNode.sh --run
+   ```
 
 ### 2.3 Notes
 - Due to the WebRTC-based system architecture, the client and compute node do not need to run on the same system.
