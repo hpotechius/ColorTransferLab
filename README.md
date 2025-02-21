@@ -65,6 +65,13 @@ In this setup, the signaling server is provided via https://signal.potechius.com
    - Open https://potechius.com/ColorTransferLab in any browser.
    - The Compute Node should now appear in the Compute Node section of the web interface. Press the button to view all available algorithms and data.
 
+### 2.2 Easy Setup
+...
+
+### 2.3 Notes
+- Due to the WebRTC-based system architecture, the client and compute node do not need to run on the same system.
+- Depending on the network environment, a connection may not always be established using a STUN server. TURN servers are not provided.
+
 ## 3. Datatypes
 
 ![414768853-3852256a-8547-4a36-be63-82f064d9f9b5](https://github.com/user-attachments/assets/67b370aa-e218-4a11-a986-8c4c42c0b9c8)
