@@ -747,9 +747,9 @@ class WebRTCClient:
     # 
     # ------------------------------------------------------------------------------------------------------------------
     async def handlerEvaluation(self, data_recv):
-        src_path = os.path.join("data", data_recv["source"])
-        ref_path = os.path.join("data", data_recv["reference"])
-        out_path = os.path.join("data", data_recv["output"])
+        src_path = os.path.join("files/data", data_recv["source"])
+        ref_path = os.path.join("files/data", data_recv["reference"])
+        out_path = os.path.join("files/data", data_recv["output"])
 
         src_img = Image(file_path=src_path)
         ref_img = Image(file_path=ref_path)
