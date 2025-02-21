@@ -256,6 +256,10 @@ DESCRIPTION
     <td width="25%"><b>Color Space</b></td>
     <td>Enables/Disables the visualization of the color distribution for images and 3D point clouds.</td>
   </tr>
+  <tr>
+    <td width="25%"><b>Single View</b></td>
+    <td>Toggles between the Single View of the renderer area and the simultaneous view of all three renderers — source, reference, and output.</td>
+  </tr>
 </table> 
 
 ## 5. List of other Color Transfer Tools
