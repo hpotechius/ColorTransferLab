@@ -30,7 +30,10 @@ The above image illustrates the three stages of the compute node:
 - Connected Stage: Client and compute node are connected for peer-to-peer data transmission.
 
 ## 2. Usage
-### 2.1 Minimal Setup
+### 2.1 Easy Setup
+...
+
+### 2.1 Advanced Setup
 ...
 
 ## 3. Datatypes
