@@ -126,20 +126,8 @@ DESCRIPTION
     <td>Contains the results which are created by the user.</td>
   </tr>
   <tr>
-    <td width="25%" align="right"><b>Published Examples</b></td>
-    <td>Images, i.e., source, references and outputs from published color transfer algorithms were extracted and are available here.</td>
-  </tr>
-  <tr>
-    <td width="25%" align="right"><b>Meshes</b></td>
-    <td>Containa a variety of triangulated and textured meshes.</td>
-  </tr>
-  <tr>
     <td width="25%" align="right"><b>Uploads</b></td>
-    <td>Images or point clouds which are uploaded, will be available here. See `Buttons/Upload`-Section for more information.</td>
-  </tr>
-  <tr>
-    <td width="25%" align="right"><b>PointClouds</b></td>
-    <td>Contains a variety of 3D point clouds for testing. Point clouds of seperate objects and of indoor scenes are available.</td>
+    <td>Images which are uploaded, will be available here. See `Buttons/Upload`-Section for more information.</td>
   </tr>
   <tr>
     <td width="25%"><b>Items</b></td>
