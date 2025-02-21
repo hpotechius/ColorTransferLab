@@ -318,8 +318,7 @@ The web app will be availabe at `https://potechius.com/ColorTransferLab`.
 
 ## 2. Datatypes
 
-![280272575-39ce5fc1-7a1d-4cdd-844f-747b057bae8b](https://github.com/ImmersiveMediaLaboratory/ColorTransferLab/assets/15614886/9d9cc22e-602d-41be-97b2-0e80d970fe91)
-
+![414768853-3852256a-8547-4a36-be63-82f064d9f9b5](https://github.com/user-attachments/assets/67b370aa-e218-4a11-a986-8c4c42c0b9c8)
 
 ## 3. Interface
 
