@@ -172,7 +172,7 @@ DESCRIPTION
   </tr>
   <tr>
     <td><b>Evaluation</b></td>
-    <td>Provides the user with information about objective evaluation metrics after clicking the *Compare*-button. See `Buttons/Compare`-Section for more information.</td>
+    <td>Provides the user with information about objective evaluation metrics after clicking the *Evaluation*-button. See `Buttons/Evaluation`-Section for more information.</td>
   </tr>
   <tr>
     <td><b>Configuration</b></td>
@@ -206,12 +206,8 @@ DESCRIPTION
 </p>
 </th>
   <tr>
-    <td width="25%"><b>Compare</b></td>
-    <td>By clicking on this button objective evaluation metrics will be applied on the object in the `Comparison`-Area and the `Output`-Area. This only works if an output was generated and a comparison object was selected.</td>
-  </tr>
-  <tr>
     <td><b>Upload</b></td>
-    <td>By clicking on this button the user can select an image or a point cloud which will be uploaded to the database. The uploaded object will be availabe in the `Items`-Area after clicking the `Uploads`-Button in the `Database`-Area.</td>
+    <td>By clicking on this button the user can select an image which will be uploaded to the database. The uploaded object will be availabe in the `Items`-Area after clicking the `Uploads`-Button in the `Database`-Area.</td>
   </tr>
   <tr>
     <td><b>Start</b></td>
