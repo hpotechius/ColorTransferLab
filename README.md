@@ -19,9 +19,7 @@ Upon selecting an item from the database, a request is sent to SE2 for downloadi
 
 The system's main purpose is color transfer application and evaluation, achieved through a corresponding POST request to CE, which responds with results.
 
-![ColorTransferLabV2-Simple](https://github.com/user-attachments/assets/5cda9c51-34ff-4131-a79d-aa594c3caa4b)
-
-
+![ColorTransferLabV2-Simple](https://github.com/user-attachments/assets/311b9e51-e59b-479e-8752-8e89fe8fecef)
 
 ## 2. Initialization
 This tool offers three ways of running the algorithms via the web interface. Either follow the steps below or run the script `initialization.sh` within the `scripts` folder
@@ -341,19 +339,15 @@ DESCRIPTION
 </th>
   <tr>
     <td width="25%"><b>Color Transfer</b></td>
-    <td>This tab provides a collection of 12 color transfer algorithms for images and 3D point clouds. A list of available algorithms can be find in the <a href="https://github.com/ImmersiveMediaLaboratory/ColorTransferLib">ColorTransferLib</a>.</td>
+    <td>This tab provides a collection of 11 color transfer algorithms.</a>.</td>
   </tr>
   <tr>
-    <td>$\textcolor{red}{\textrm{\textbf{Classification (N/A)}}}$</td>
-    <td>This tab will provide a collection of classification algorithms for images, 3D point clouds and 3D meshes.</td>
+    <td width="25%"><b>Style Transfer</b></td>
+    <td>This tab provides a collection of 5 style transfer algorithms.</td>
   </tr>
   <tr>
-    <td>$\textcolor{red}{\textrm{\textbf{Reconstruction (N/A)}}}$</td>
-    <td>This tab will provide a collection of reconstruction algorithms for images in order to generate 3D point clouds.</td>
-  </tr>
-  <tr>
-    <td>$\textcolor{red}{\textrm{\textbf{Registration (N/A)}}}$</td>
-    <td>This tab will provide a collection of 3D point cloud registration algorithms.</td>
+    <td width="25%"><b>Colorization</b></td>
+    <td>This tab provides a collection of 3 colorization algorithms.</td>
   </tr>
 </table>
 
