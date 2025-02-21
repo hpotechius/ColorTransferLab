@@ -8,18 +8,16 @@ ColorTransferLabV2 is a web-based user interface for the application of **color 
 This tool is based on WebRTC communication between the client, which is the [User Interface](https://potechius.com/ColorTransferLab), and the compute node, which applies computations using the Python library [ColorTransferLib](https://github.com/hpotechius/ColorTransferLib). This library contains available algorithms and image quality assessment metrics.
 
 ## 1. System Architecture
+This system consists of four components: **Client**, **Web Server**, **Signaling Server**, and **Compute Node**, which will be explained in the following sections.
 
+### 1.1 Client and Web Server
+The client is the user interface, served by a web server available at https://potechius.com/ColorTransferLab or self-hosted. It allows users to visualize data and connect to an available Compute Node to apply the aforementioned algorithms.
 
+### 1.2 Signaling Server
+To connect two instances, such as the client and compute node, within this WebRTC-based setup, the signaling server announces them to each other. A list of available instances can be viewed at https://signal.potechius.com.
 
-The core of this system is Server Instance 2 (SE2) with the Compute Engine (CE) acting as an HTTP-Python server for color transfer algorithms and evaluations using ColorTransferLib. SE2 offers test objects (images, point clouds, meshes) and is compatible with CPU-supported systems, preferably GPUs.
-
-During operation, SE2 registers itself with Server Instance 1 (SE1) by sending its IP address via a POST request, and this info is stored in the CE storage. The Backend checks CE availability regularly.
-
-Users access the Frontend via SE1, which delivers compiled React Code as HTML/CSS/JS files. CE addresses are displayed on the Frontend for users to choose a compute system. Selection triggers requests for object paths, color transfer methods, and IQA metrics from SE2.
-
-Upon selecting an item from the database, a request is sent to SE2 for downloading and displaying the item on the Frontend. Alternatively, users can upload an item to the Object Storage via a POST request, initiating object information calculations on SE2 (color distribution, 3D color histograms, etc.).
-
-The system's main purpose is color transfer application and evaluation, achieved through a corresponding POST request to CE, which responds with results.
+### 1.3 Compute Node
+This instance must be provided by the user (see Section 2: Usage). It supplies the necessary data and computational power to apply the algorithms. It is a Python instance with an installed version of ColorTransferLib.
 
 ![ColorTransferLabV2-Simple](https://github.com/user-attachments/assets/311b9e51-e59b-479e-8752-8e89fe8fecef)
 
