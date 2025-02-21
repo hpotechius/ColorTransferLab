@@ -34,12 +34,36 @@ The above image illustrates the three stages of the compute node:
 - Connected Stage: Client and compute node are connected for peer-to-peer data transmission.
 
 ## 2. Setup
+### 2.1 Advanced Setup
 In this setup, the signaling server is provided via https://signal.potechius.com, and the user interface is served through the web server at https://potechius.com/ColorTransferLab. The only instance that must be provided by the user is the compute node. Notably, both the signaling server and the web server are included in this repository and can be self-hosted. The following steps must be followed to run the compute node and test the application.
 
-1. Clone the repository
+1. Clone the repository and go into the directory
    ```
    git clone git@github.com:hpotechius/ColorTransferLab.git
+   cd ColorTransferLab
    ```
+2. Create and activate an environment **env** using Python3.10
+   ```
+   python3.10 -m venv env
+   source env/bin/activate
+   ```
+3. Install the necessary packages
+   ```
+   pip install -r ressources/requirements/requirements.txt
+   ```
+4. Run the Compute Node
+   ```
+   cd instances/ComputeNode
+   python main_computenode.py
+   ```
+   - During the first run, the Compute Node will download the dataset from https://potechius.com/Downloads/Datasets/ColorTransferLab_Database.zip.
+   - The Compute Node will automatically verify whether the specified signaling server is online.
+5. Connect to Signal Server
+   - Press the "Connect to Signal Server" button (https://signal.potechius.com).
+   - The Compute Node will now enter a waiting state until a client connects to it.
+6. Connect to Compute Node
+   - Open https://potechius.com/ColorTransferLab in any browser.
+   - The Compute Node should now appear in the Compute Node section of the web interface. Press the button to view all available algorithms and data.
 
 ## 3. Datatypes
 
