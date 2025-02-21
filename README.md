@@ -1,14 +1,16 @@
 <img width="1708" alt="infographic" src="https://github.com/user-attachments/assets/d1675913-75dd-4471-bc0b-134931abab13">
 
 # ColorTransferLabV2
-![](https://img.shields.io/badge/ColorTransferLib-2.0.1--2-purple) ![python3.10.12](https://img.shields.io/badge/build-3.10.12-blue?logo=python&label=Python) ![](https://img.shields.io/badge/build-24.04.1%20LTS-orange?logo=ubuntu&label=Ubuntu
-) ![](https://img.shields.io/badge/build-MIT-purple?label=License) ![](https://img.shields.io/badge/build-6.4.0-brown?logo=octave&label=Octave) ![](https://img.shields.io/badge/build-GeForce%20RTX%204060%20Ti-white?logo=nvidia&label=GPU) ![](https://img.shields.io/badge/build-intel%20Core%20i7--14700KF-white?logo=intel&label=CPU) ![](https://img.shields.io/badge/npm-8.9.0-red?logo=npm) ![](https://img.shields.io/badge/Node.js-16.15.0-green?logo=node.js)
+![](https://img.shields.io/badge/ColorTransferLib-2.0.1--2-purple) ![python3.10.12](https://img.shields.io/badge/build-3.10.12-blue?logo=python&label=Python) ![](https://img.shields.io/badge/build-24.04.1%20LTS-orange?logo=ubuntu&label=Ubuntu) ![](https://img.shields.io/badge/build-MIT-purple?label=License) ![](https://img.shields.io/badge/build-6.4.0-brown?logo=octave&label=Octave) ![](https://img.shields.io/badge/build-GeForce%20RTX%204060%20Ti-white?logo=nvidia&label=GPU) ![](https://img.shields.io/badge/build-intel%20Core%20i7--14700KF-white?logo=intel&label=CPU) ![](https://img.shields.io/badge/npm-8.9.0-red?logo=npm) ![](https://img.shields.io/badge/Node.js-16.15.0-green?logo=node.js)
 
 ColorTransferLabV2 is a web-based user interface for the application of **color transfer**, **style transfer**, and **colorization** algorithms on different data types, including **Images**, **Videos**, **Point Clouds**, **Meshes**, **Light Fields**, **Volumetric Videos**, and **Gaussian Splattings**, with the possibility to visualize these data types. Additionally, 20 evaluation metrics are included to assess color transfer results. It is based on our previous tool ColorTransferLab.
 
 This tool is based on WebRTC communication between the client, which is the [User Interface](https://potechius.com/ColorTransferLab), and the compute node, which applies computations using the Python library [ColorTransferLib](https://github.com/hpotechius/ColorTransferLib). This library contains available algorithms and image quality assessment metrics.
 
 ## 1. System Architecture
+
+
+
 The core of this system is Server Instance 2 (SE2) with the Compute Engine (CE) acting as an HTTP-Python server for color transfer algorithms and evaluations using ColorTransferLib. SE2 offers test objects (images, point clouds, meshes) and is compatible with CPU-supported systems, preferably GPUs.
 
 During operation, SE2 registers itself with Server Instance 1 (SE1) by sending its IP address via a POST request, and this info is stored in the CE storage. The Backend checks CE availability regularly.
@@ -21,8 +23,9 @@ The system's main purpose is color transfer application and evaluation, achieved
 
 ![ColorTransferLabV2-Simple](https://github.com/user-attachments/assets/311b9e51-e59b-479e-8752-8e89fe8fecef)
 
-## 2. Initialization
-TODO
+## 2. Usage
+### 2.1 Minimal Setup
+...
 
 ## 3. Datatypes
 
