@@ -119,7 +119,7 @@ DESCRIPTION
 </th>
   <tr>
     <td width="25%"><b>Database</b></td>
-    <td> </td>
+    <td>Contains a folder structure of available data.</td>
   </tr>
   <tr>
     <td width="25%" align="right"><b>Output</b></td>
