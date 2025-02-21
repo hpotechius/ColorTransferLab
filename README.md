@@ -1,4 +1,4 @@
-<img width="1708" alt="infographic" src="https://github.com/ImmersiveMediaLaboratory/ColorTransferLab/assets/15614886/2d8c5d04-0db2-4352-bb48-e29173f8ec15">
+<img width="1708" alt="infographic" src="https://github.com/user-attachments/assets/d1675913-75dd-4471-bc0b-134931abab13">
 
 # ColorTransferLab
 ![python3.10.12](https://img.shields.io/badge/build-3.10.12-blue?logo=python&label=Python) ![](https://img.shields.io/badge/build-22.04.3%20LTS-orange?logo=ubuntu&label=Ubuntu
@@ -17,7 +17,7 @@ Upon selecting an item from the database, a request is sent to SE2 for downloadi
 
 The system's main purpose is color transfer application and evaluation, achieved through a corresponding POST request to CE, which responds with results.
 
-![SystemArchitecture](https://github.com/ImmersiveMediaLaboratory/ColorTransferLab/assets/15614886/1a47b46d-f097-4151-a4ef-62c7f8533938)
+![ColorTransferLabV2-Simple](https://github.com/user-attachments/assets/5cda9c51-34ff-4131-a79d-aa594c3caa4b)
 
 
 
