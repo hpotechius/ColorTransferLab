@@ -33,7 +33,8 @@ function Terminal(props) {
         // empty the terminal
         $("#console_terminal").html("")
 
-        consolePrint("INFO", "To reveal the available Compute Engines (CE), simply press the button located within the SERVER section. To set up and make your server visible here, please follow the instructions provided on out GitHub page at https://github.com/ImmersiveMediaLaboratory/ColorTransferLab ...")
+
+        consolePrint("INFO", 'Registered compute nodes will be listed in the COMPUTE NODE section. To set up and make your compute node available, please follow the instructions provided on our GitHub page at <a href="https://github.com/hpotechius/ColorTransferLab" target="_blank" rel="noopener noreferrer">https://github.com/hpotechius/ColorTransferLab</a>. If you only want to use the algorithms and evaluation metrics, you can use the standalone library at <a href="https://github.com/hpotechius/ColorTransferLib" target="_blank" rel="noopener noreferrer">https://github.com/hpotechius/ColorTransferLib</a>.')
     }, []);
 
     /**************************************************************************************************************
