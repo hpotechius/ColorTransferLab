@@ -11,7 +11,7 @@ import "./ConsoleTabButton.scss"
 import TerminalIcon from '@mui/icons-material/Terminal';
 import NoteAltIcon from '@mui/icons-material/NoteAlt';
 import SettingsSuggestIcon from '@mui/icons-material/SettingsSuggest';
-import BarChartIcon from '@mui/icons-material/BarChart';
+import TableChartIcon from '@mui/icons-material/TableChart';
 import InfoIcon from "@mui/icons-material/Info";
 import GroupIcon from '@mui/icons-material/Group';
 import PreviewIcon from '@mui/icons-material/Preview';
@@ -41,7 +41,7 @@ import FlagCircleIcon from '@mui/icons-material/FlagCircle';
         "Terminal": {icon: <TerminalIcon className="consoletabbutton-icon console_icon" />, idx: "terminal", enabled: true},
         "Evaluation": {icon: <NoteAltIcon className="consoletabbutton-icon console_icon" />, idx: "evaluation", enabled: !isUserStudyOpen},
         "Configuration": {icon: <SettingsSuggestIcon className="consoletabbutton-icon console_icon" />, idx: "configuration", enabled: !isUserStudyOpen},
-        "Data": {icon: <BarChartIcon className="consoletabbutton-icon console_icon" />, idx: "data", enabled: !isUserStudyOpen},
+        "Data": {icon: <TableChartIcon className="consoletabbutton-icon console_icon" />, idx: "data", enabled: !isUserStudyOpen},
         "Information": {icon: <InfoIcon className="consoletabbutton-icon console_icon" />, idx: "information", enabled: !isUserStudyOpen},
         // User Study Tabs
         "Metrics": {icon: <NoteAltIcon className="consoletabbutton-icon console_icon" />, idx: "metrics", enabled: isUserStudyOpen},
