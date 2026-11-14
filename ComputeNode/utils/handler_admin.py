@@ -464,7 +464,7 @@ async def handlerGetUserStudyDatabaseStructure(client, message, client_id):
     Utils.printRECV(f"Client requests user study database structure via command: {command_recv}.", client.window)
     Utils.printSEND(f"Sending user study database structure.", client.window)
 
-    db_structure = Utils.get_database_structure("files/study")
+    db_structure = Utils.get_database_structure(os.path.abspath("files/study"))
 
     client.send_datachannel_message({
         "message": "/getUserStudyDatabaseStructureResponse",

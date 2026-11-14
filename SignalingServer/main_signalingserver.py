@@ -145,6 +145,16 @@ def on_message(data):
             else:
                 status = "Idle"
 
+            # Clear stale client links before applying the current connection list.
+            for client in client_instances.values():
+                if client["connected_compute_node"] == data.get("from"):
+                    client["connected_compute_node"] = ""
+                    client["status"] = "Idle"
+            for participant in participant_instances.values():
+                if participant["connected_compute_node"] == data.get("from"):
+                    participant["connected_compute_node"] = ""
+                    participant["status"] = "Idle"
+
             computenode_instances[data.get("from")]["status"] = status
             computenode_instances[data.get("from")]["connected_clients"] = data.get("data")["connected_clients"]
             computenode_instances[data.get("from")]["connected_participants"] = data.get("data")["connected_participants"]
@@ -193,18 +203,43 @@ def on_message(data):
 # Function to get the country name from an IP address
 # ------------------------------------------------------------------------------------------------------------------
 def get_country_from_ip(ip_address):
+    if not ip_address:
+        return "Unknown"
+
+    # Hugging Face proxies can provide a comma-separated forwarding chain.
+    ip_address = ip_address.split(",", 1)[0].strip()
     try:
-        # Send a request to the geolocation API with the given IP address
-        response = requests.get(f'https://geolocation-db.com/json/{ip_address}&position=true')
-        # Parse the JSON response
+        response = requests.get(
+            f"https://geolocation-db.com/json/{ip_address}",
+            params={"position": "true"},
+            timeout=5,
+        )
+        response.raise_for_status()
         data = response.json()
-        # Return the country name from the response data, or 'Unknown' if not found
-        return data.get('country_name', 'Unknown')
-    except requests.RequestException as e:
-        # Print an error message if the request fails
+        country = data.get("country_name")
+        if country:
+            return country
+    except (requests.RequestException, ValueError) as e:
         print(f"Error fetching country for IP {ip_address}: {e}")
-        # Return 'Unknown' if there is an exception
-        return 'Unknown'
+
+    try:
+        response = requests.get(f"https://ipwho.is/{ip_address}", timeout=5)
+        response.raise_for_status()
+        data = response.json()
+        if data.get("success") and data.get("country"):
+            return data["country"]
+    except (requests.RequestException, ValueError) as e:
+        print(f"Fallback country lookup failed for IP {ip_address}: {e}")
+
+    return "Unknown"
+
+
+def get_registered_country(data, ip_address):
+    reported_country = data.get("country")
+    if isinstance(reported_country, str) and reported_country.strip():
+        return reported_country.strip()
+    return get_country_from_ip(ip_address)
+
 
 # ------------------------------------------------------------------------------------------------------------------
 # Registers a connected client
@@ -215,7 +250,7 @@ def on_register(data):
     client_id = data["client_id"]
     client_remote_ip = request.headers.get("X-Real-IP", request.remote_addr)
     # Get country from IP address
-    client_country = get_country_from_ip(client_remote_ip)
+    client_country = get_registered_country(data, client_remote_ip)
 
     new_dict = {
         "name": data["name"],

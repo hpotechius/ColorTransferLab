@@ -20,9 +20,9 @@ import json
 from utils.utils import Utils
 import numpy as np
 import asyncio
-import func_timeout
 from os import path
 import zipfile
+import importlib.util
 
 # ------------------------------------------------------------------------------------------------------------------
 # Handles the request for the database structure and sends it back to the client.
@@ -34,7 +34,12 @@ async def handlerGetDatabaseStructure(client, message, client_id):
     Utils.printRECV(f"Client requests database structure via command: {command_recv}.", client.window)
     Utils.printSEND(f"Sending database structure.", client.window)
 
-    db_structure = Utils.get_database_structure("files/data")
+    database_path = os.path.abspath("files/data")
+    for _ in range(120):
+        if os.path.isdir(database_path):
+            break
+        await asyncio.sleep(0.5)
+    db_structure = Utils.get_database_structure(database_path)
 
     client.send_datachannel_message({
         "message": "/getDatabaseStructureResponse",
@@ -208,22 +213,53 @@ async def handlerColorTransfer(client, message, client_id):
     src_file_name, src_file_ext = data_recv["source"].split("/")[-1].split(".")
     src_folder = data_recv["source"].split("/")[:-1]
 
-    ref_file_name, ref_file_ext = data_recv["reference"].split("/")[-1].split(".")
-    ref_folder = data_recv["reference"].split("/")[:-1]
-
     out_file_name = data_recv["output"].split("/")[-1]
     out_file_ext = src_file_ext
     out_folder = data_recv["output"].split("/")[:-1]
 
-
     src_file_path = os.path.join(base_path, *src_folder, src_file_name + "." + src_file_ext)
     src_raw_path = os.path.join(base_path, tmp_folder, src_file_name)
 
-    ref_file_path = os.path.join(base_path, *ref_folder, ref_file_name + "." + ref_file_ext)
-    ref_raw_path =  os.path.join(base_path, tmp_folder, ref_file_name)
-
     method_id = data_recv["approach"]
     method_options = data_recv["options"]
+    reference_path = data_recv.get("reference")
+    colorization_methods = {"Kang23", "Ji22", "Su20"}
+
+    if not reference_path and method_id not in colorization_methods:
+        output = {
+            "status_code": -1,
+            "response": "A reference image is required for this algorithm.",
+            "object": None,
+            "process_time": 0,
+        }
+        client.send_datachannel_message({
+            "message": "error",
+            "data": output,
+        }, client_id)
+        return
+
+    ref_file_name = ref_file_ext = ref_folder = ref_file_path = ref_raw_path = None
+    if reference_path:
+        ref_file_name, ref_file_ext = reference_path.split("/")[-1].split(".")
+        ref_folder = reference_path.split("/")[:-1]
+        ref_file_path = os.path.join(base_path, *ref_folder, ref_file_name + "." + ref_file_ext)
+        ref_raw_path = os.path.join(base_path, tmp_folder, ref_file_name)
+
+    if method_id == "Su20" and importlib.util.find_spec("detectron2") is None:
+        output = {
+            "status_code": -1,
+            "response": (
+                "Su20 requires Detectron2, which is not available on macOS. "
+                "Run Su20 on a supported Linux/CUDA environment."
+            ),
+            "object": None,
+            "process_time": 0,
+        }
+        client.send_datachannel_message({
+            "message": "error",
+            "data": output,
+        }, client_id)
+        return
 
     mesh_zip_path = None
 
@@ -314,7 +350,14 @@ async def handlerColorTransfer(client, message, client_id):
             src = None
 
         # ----------------- REF initialization -----------------
-        if ref_file_ext == "png" or ref_file_ext == "jpg":
+        if not reference_path:
+            # Colorization algorithms do not use reference pixels, but some
+            # library entry points still require an Image-like reference.
+            if method_id in colorization_methods and src is not None:
+                ref = Image(array=np.zeros_like(src.get_raw()), normalized=True)
+            else:
+                ref = None
+        elif ref_file_ext == "png" or ref_file_ext == "jpg":
             ref = Image(file_path=ref_file_path)
         elif ref_file_ext == "ply":
             ref = Mesh(file_path=ref_file_path, datatype="PointCloud")
@@ -333,11 +376,14 @@ async def handlerColorTransfer(client, message, client_id):
         ct.set_options(method_options)
 
         try:
-            output = func_timeout.func_timeout(180, ct.apply, args=(), kwargs=None)
-        except func_timeout.FunctionTimedOut:
+            # Keep the asyncio event loop responsive while native algorithms
+            # perform CPU/GPU work in a background thread.
+            algorithm_task = asyncio.create_task(asyncio.to_thread(ct.apply))
+            output = await asyncio.wait_for(asyncio.shield(algorithm_task), timeout=180)
+        except asyncio.TimeoutError:
             output = {
                 "status_code": -1,
-                "response": "The algorithm took longer than 180 seconds to process. The process was aborted.",
+                "response": "The algorithm took longer than 180 seconds to process.",
                 "object": None,
                 "process_time": 0
             }
@@ -472,4 +518,5 @@ async def handlerPutIpAddress(client, message, client_id):
     }
 
     client.window.set_client_box()
+    client.window.set_client_status("Connected")
     client.window.set_compute_node_status("Connected")

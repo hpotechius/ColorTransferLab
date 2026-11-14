@@ -102,7 +102,12 @@ class WebRTC {
 
         this.downloadComplete = true;
 
-        this.socket = io(SIGNAL_SERVER);
+        this.socket = io(SIGNAL_SERVER, {
+            reconnection: true,
+            reconnectionAttempts: Infinity,
+            reconnectionDelay: 1000,
+            reconnectionDelayMax: 10000,
+        });
         this.client_id = this.generateRandomUUID();
         this.database_id = "";
         this.ip_address = "";
@@ -134,8 +139,15 @@ class WebRTC {
         this.sid = null;
         this.peerConnection = null;
         this.dataChannel = null;
+        this.relayActive = false;
+        this.relayRequested = false;
+        this.relayFallbackTimer = null;
+        this.connectionPassword = null;
+        this.connectionTestLink = null;
+        this.relayChunks = new Map();
 
         this.onConnectionStateChange = null;
+        this.onRelayStateChange = null;
 
         this.inputMessage = "";
         this.messages = [];
@@ -213,22 +225,34 @@ class WebRTC {
 
         // Socket error handling
         this.socket.on("error", (error) => {
-            this.socket.close();
-            console.debug("ERRO", `Connection to Signal Server ${SIGNAL_SERVER} failed. Please check the connection.`);
+            console.debug("ERRO", `Signal Server error at ${SIGNAL_SERVER}.`, error);
         });
 
         this.socket.on("connect_error", (error) => {
-            this.socket.close();
-            console.debug("ERRO", `Connection to Signal Server ${SIGNAL_SERVER} failed. Please check the connection.`);
+            console.debug("ERRO", `Connection to Signal Server ${SIGNAL_SERVER} failed; retrying.`, error);
         });
 
-        this.socket.on("connect", () => {
+        this.socket.on("connect", async () => {
             console.debug("INFO", `Client is connected to Signal Server: ${SIGNAL_SERVER}`);
+
+            let country;
+            try {
+                const response = await fetch("https://ipapi.co/json/", {
+                    signal: AbortSignal.timeout(5000),
+                });
+                if (response.ok) {
+                    const location = await response.json();
+                    country = location.country_name;
+                }
+            } catch (error) {
+                console.debug("INFO", "Could not determine client country.", error);
+            }
 
             this.socket.emit("register", {
                 client_id: this.client_id,
                 name: this.client_name,
                 type: this.client_type,
+                country,
             });
 
             // If there is a last connected ComputeNode, automatically reconnect, but only if this client is of type "Client" (Participants should not auto-reconnect, because they automatically connect to a given compute node via URL param)
@@ -252,6 +276,49 @@ class WebRTC {
                 setOfferState(true);
             } else if (data.type === "candidate") {
                 await this.handleCandidate(data.candidate);
+            } else if (data.type === "relay_ready") {
+                this.relayActive = true;
+                this.relayRequested = false;
+                this.setDataChannelOpen(true);
+                if (this.onRelayStateChange) {
+                    this.onRelayStateChange({
+                        active: true,
+                        serverKey: this.database_id || null,
+                    });
+                }
+                console.debug("INFO", "Connected to Compute Node through WebSocket relay.");
+                await this.sendMessage(JSON.stringify({
+                    command: "/putIpAddressRequest",
+                    data: {
+                        ip_address: this.ip_address,
+                        client_id: this.client_id,
+                        client_name: this.client_name
+                    }
+                }));
+            } else if (data.type === "relay_data") {
+                let relayData = data.data;
+                if (relayData instanceof Uint8Array) {
+                    relayData = new TextDecoder().decode(relayData);
+                }
+                this.onMessage({ data: relayData });
+            } else if (data.type === "relay_chunk") {
+                let transfer = this.relayChunks.get(data.transfer_id);
+                if (!transfer) {
+                    transfer = {
+                        total: data.total,
+                        chunks: new Array(data.total),
+                        received: 0,
+                    };
+                    this.relayChunks.set(data.transfer_id, transfer);
+                }
+                if (transfer.chunks[data.index] === undefined) {
+                    transfer.chunks[data.index] = data.data;
+                    transfer.received += 1;
+                }
+                if (transfer.received === transfer.total) {
+                    this.relayChunks.delete(data.transfer_id);
+                    this.onMessage({ data: transfer.chunks.join("") });
+                }
             } else if (data.type === "error") {
                 console.debug("RECV", `Offer rejected. Reason: ${data.reason}`);
                 setOfferState(false);
@@ -292,6 +359,43 @@ class WebRTC {
      *
      **************************************************************************************************************/
     async sendMessage(message = "", chunksEnabled = false) {
+        let command = null;
+        if (typeof message === "string") {
+            try {
+                command = JSON.parse(message).command;
+            } catch (error) {
+                console.warn("Could not inspect outgoing WebRTC message:", error);
+            }
+        }
+        if (command === "/file" || command === "/getUserStudyFileRequest" ||
+            command === "/getRatingFileRequest" || command === "/getResultFileRequest") {
+            if (!this.downloadComplete)
+                await waitForBoolean(() => this.downloadComplete);
+            this.downloadComplete = false;
+        }
+
+        if (this.relayActive) {
+            if (chunksEnabled && message instanceof ArrayBuffer) {
+                const chunkSize = 16 * 1024;
+                for (let offset = 0; offset < message.byteLength; offset += chunkSize) {
+                    this.socket.emit("message", {
+                        type: "relay_data",
+                        data: message.slice(offset, offset + chunkSize),
+                        target: this.database_id,
+                        from: this.client_id,
+                    });
+                }
+                return;
+            }
+            this.socket.emit("message", {
+                type: "relay_data",
+                data: message,
+                target: this.database_id,
+                from: this.client_id,
+            });
+            return;
+        }
+
         const waitForOpen = () => {
             return new Promise((resolve, reject) => {
                 const start = Date.now();
@@ -312,12 +416,6 @@ class WebRTC {
             if (chunksEnabled && message instanceof ArrayBuffer) {
                 this.sendArrayBufferInChunks(message);
             } else {
-                if (JSON.parse(message).command === "/file" || JSON.parse(message).command === "/getUserStudyFileRequest" || JSON.parse(message).command === "/getRatingFileRequest" || JSON.parse(message).command === "/getResultFileRequest") {
-                    if (!this.downloadComplete)
-                        await waitForBoolean(() => this.downloadComplete);
-                    
-                    this.downloadComplete = false
-                }
                 this.dataChannel.send(message);
             }
         } catch (err) {
@@ -460,7 +558,7 @@ class WebRTC {
                 "color: orange;"
             );
             if (state === "failed") {
-                console.warn("PeerConnection failed, you may want to recreate it.");
+                this.activateRelayFallback();
             }
 
             // React (Server.jsx) informieren
@@ -474,6 +572,27 @@ class WebRTC {
 
         this.dataChannel = null;
     }
+
+    activateRelayFallback = () => {
+        if (this.relayActive || this.relayRequested || !this.database_id) return;
+        this.relayRequested = true;
+        this.relayActive = false;
+        if (this.relayFallbackTimer) {
+            clearTimeout(this.relayFallbackTimer);
+            this.relayFallbackTimer = null;
+        }
+        if (this.peerConnection) this.peerConnection.close();
+        const password = this.connectionPassword;
+        const testLink = this.connectionTestLink;
+        console.debug("INFO", "WebRTC failed; requesting WebSocket relay.");
+        this.socket.emit("message", {
+            type: "relay_request",
+            target: this.database_id,
+            from: this.client_id,
+            password,
+            test_link: testLink,
+        });
+    };
 
     /**************************************************************************************************************
      * Combines multiple ArrayBuffers into a single ArrayBuffer
@@ -493,9 +612,11 @@ class WebRTC {
      * Handles incoming messages from the Compute Node via the DataChannel.
      **************************************************************************************************************/
     async onMessage(event) {
-        if (typeof event.data === "string") {
-            let messageString = event.data;
-            const message = JSON.parse(messageString);
+        if (typeof event.data === "string" || (event.data && typeof event.data === "object" && !(event.data instanceof ArrayBuffer))) {
+            let message = event.data;
+            if (typeof message === "string") {
+                message = JSON.parse(message);
+            }
 
             const handlerName = this.handlerNames[message.message];
 
@@ -605,6 +726,8 @@ class WebRTC {
      **************************************************************************************************************/
     createOffer = async (sid, password, test_link=null, turnServer=null) => {
         this.database_id = sid;
+        this.connectionPassword = password;
+        this.connectionTestLink = test_link;
         console.debug("INFO", `Creating offer for Compute Node with SID: ${sid}`);
 
         // Persist SID to enable auto-reconnect after page reload
@@ -627,6 +750,8 @@ class WebRTC {
             }
             this.peerConnection = null;
             this.dataChannel = null;
+            this.relayActive = false;
+            this.relayRequested = false;
         }
 
         // Create peer connection
@@ -686,6 +811,10 @@ class WebRTC {
                 password: password,
                 test_link: test_link
             });
+            this.relayFallbackTimer = setTimeout(
+                this.activateRelayFallback,
+                10000
+            );
         } catch (error) {
             console.error("Error creating or setting local description:", error);
         }
@@ -695,6 +824,13 @@ class WebRTC {
      *
      **************************************************************************************************************/
     disconnect() {
+        if (this.relayActive && this.database_id && this.socket.connected) {
+            this.socket.emit("message", {
+                type: "relay_close",
+                target: this.database_id,
+                from: this.client_id,
+            });
+        }
         if (this.peerConnection) {
             try {
                 this.peerConnection.close();
@@ -705,6 +841,12 @@ class WebRTC {
         }
         this.dataChannel = null;
         this.database_id = "";
+        this.relayActive = false;
+        this.relayRequested = false;
+        this.setDataChannelOpen(false);
+        if (this.onRelayStateChange) {
+            this.onRelayStateChange({active: false, serverKey: null});
+        }
         try {
             window.localStorage.removeItem("WebRTCProvider:lastSid");
         } catch (e) {}

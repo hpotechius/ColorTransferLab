@@ -24,7 +24,7 @@ export default function HeaderEval() {
      **************************************************************************************************************/
     return (
         <div className="headereval">
-            <img className='headereval-logo' src="/ColorTransferLab/logo.png" alt="Logo"/>
+            <img className='headereval-logo' src={`${import.meta.env.BASE_URL}logo.png`} alt="Logo"/>
             <div id="headereval_title">ColorTransferEval</div>
         </div>
     );

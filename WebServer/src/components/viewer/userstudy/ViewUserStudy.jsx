@@ -33,7 +33,9 @@ export default function ViewUserStudy({ isUserStudyOpen }) {
     /*------------------------------------------------------------------------------------------------------------
     -- STATE VARIABLES
     -------------------------------------------------------------------------------------------------------------*/
-    const [activeTab, setActiveTab] = useState(getInitialValue('ViewUserStudy:activeTab') ?? "preview");
+    const storedActiveTab = getInitialValue('ViewUserStudy:activeTab');
+    const normalizedActiveTab = storedActiveTab?.toLowerCase() ?? "preview";
+    const [activeTab, setActiveTab] = useState(normalizedActiveTab);
 
     /*------------------------------------------------------------------------------------------------------------
     -- VARIABLES

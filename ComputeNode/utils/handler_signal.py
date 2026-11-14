@@ -18,6 +18,15 @@ async def handlerMessage(webrtcclient,data):
     if msg_type == "offer":
         Utils.printRECV(f"Received Offer from {sender}", webrtcclient.window)
         await webrtcclient.on_offer(data["sdp"], sender, data.get("password"), data.get("test_link"))
+    elif msg_type == "relay_request":
+        Utils.printRECV(f"Received WebSocket relay request from {sender}", webrtcclient.window)
+        await webrtcclient.on_relay_request(
+            sender, data.get("password"), data.get("test_link")
+        )
+    elif msg_type == "relay_data":
+        await webrtcclient.on_relay_message(sender, data.get("data"))
+    elif msg_type == "relay_close":
+        await webrtcclient.on_relay_close(sender)
     elif msg_type == "answer":
         print("Processing answer...")
         await webrtcclient.on_answer(data["sdp"], sender)

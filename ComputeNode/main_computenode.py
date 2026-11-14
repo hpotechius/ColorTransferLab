@@ -8,21 +8,35 @@ Please see the LICENSE file that should have been included as part of this packa
 """
 
 import warnings
+import sys
 warnings.filterwarnings("ignore", message="pkg_resources is deprecated as an API*", category=UserWarning)
 
-# IMPORTANT: Has to be imported before other modules, otherwise Segmentation fault (core dumped)
-from utils.segmentation import segment
+# Keep native numerical libraries predictable on macOS. Some Chang03
+# dependencies are not safe to interrupt from a worker thread.
+import os
+if sys.platform == "darwin":
+    os.environ.setdefault("OMP_NUM_THREADS", "1")
+    os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")
+    os.environ.setdefault("VECLIB_MAXIMUM_THREADS", "1")
 
 import asyncio
 import argparse
-from utils.interface import Interface
 from utils.utils import Utils
-from utils.webrtc import WebRTCClient
 import uuid
 
 # Parse command-line arguments
 parser = argparse.ArgumentParser(description="WebRTC Client")
 parser.add_argument("--input", type=str, help="The message to send automatically")
+parser.add_argument("--web", action="store_true", help="Run the ComputeNode interface in a browser")
+parser.add_argument("--web-host", default="127.0.0.1", help="Web interface bind address")
+parser.add_argument("--web-port", type=int, default=8080, help="Web interface port")
+args = parser.parse_args()
+
+# Keep the original eager import order for the Qt/native compute mode. The
+# browser mode can serve its UI without importing optional compute packages.
+if not args.web:
+    from utils.segmentation import segment
+    from utils.webrtc import WebRTCClient
 
 #SIGNAL_SERVER = "http://localhost:8071"
 SIGNAL_SERVER = "https://signal.potechius.com"
@@ -62,7 +76,14 @@ async def wait_for_connection(client, window=None, timeout=20.0):
 # 
 # ------------------------------------------------------------------------------------------------------------------
 async def main_server(window=None):
-    client = WebRTCClient(
+    # Import the compute stack only when the user starts a connection. This
+    # allows the browser interface to open on machines without CUDA packages.
+    if args.web:
+        from utils.webrtc import WebRTCClient as rtc_client_class
+    else:
+        rtc_client_class = WebRTCClient
+
+    client = rtc_client_class(
         signal_server=window.signal_server,
         client_id=CLIENT_ID,
         compute_node_name=window.compute_node_name,
@@ -110,4 +131,11 @@ async def main_server(window=None):
 # 
 # ------------------------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
-    Interface(main_server, SIGNAL_SERVER, PASSWORD)
+    if args.web:
+        from utils.web_interface import WebInterface
+        interface = WebInterface(main_server, SIGNAL_SERVER, PASSWORD,
+                                 host=args.web_host, port=args.web_port)
+        asyncio.run(interface.start())
+    else:
+        from utils.interface import Interface
+        Interface(main_server, SIGNAL_SERVER, PASSWORD)

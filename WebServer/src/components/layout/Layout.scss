@@ -8,13 +8,13 @@ Please see the LICENSE file that should have been included as part of this packa
 */
 
 .layout {
-    width: 100vw;
+    width: 100%;
     height: 100dvh;
     display: flex;
     flex-direction: column;
     user-select: none;
     background-color: #363636;
-    min-width: 350px;
+    min-width: 0;
     overflow: hidden;
 }
 

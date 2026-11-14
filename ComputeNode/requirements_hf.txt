@@ -1,0 +1,10 @@
+git+https://github.com/hpotechius/ColorTransferLib.git@huggingface
+aiortc
+aiohttp
+python-socketio
+geocoder
+einops
+pycocotools
+psutil
+psycopg[binary]
+setuptools<82

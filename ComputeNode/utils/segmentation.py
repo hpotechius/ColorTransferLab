@@ -9,11 +9,18 @@ Please see the LICENSE file that should have been included as part of this packa
 
 import torch
 import numpy as np
-from sam3.model_builder import build_sam3_image_model
-from sam3.model.sam3_image_processor import Sam3Processor
 from PIL import Image as PILImage
 from ColorTransferLib.DataTypes.Image import Image
 from utils.utils import Utils
+
+try:
+    from sam3.model_builder import build_sam3_image_model
+    from sam3.model.sam3_image_processor import Sam3Processor
+    SAM3_IMPORT_ERROR = None
+except ImportError as error:
+    build_sam3_image_model = None
+    Sam3Processor = None
+    SAM3_IMPORT_ERROR = error
 
 # ------------------------------------------------------------------------------------------------------------------
 # Converts a hex color string (e.g., "#RRGGBB") to a BGR tuple.
@@ -31,6 +38,13 @@ def hex_to_bgr(hex_str):
 # Performs semantic segmentation on the input image.
 # ------------------------------------------------------------------------------------------------------------------
 def segment(client, input_image, segment_classes):
+    if SAM3_IMPORT_ERROR is not None:
+        raise RuntimeError(
+            "SAM3 segmentation is unavailable in this Python environment. "
+            "Install SAM3 with its Linux/CUDA dependencies, including Triton, "
+            "on a supported Linux/NVIDIA system."
+        ) from SAM3_IMPORT_ERROR
+
 
     # ======================================
     # 26 Klassen + Farben
@@ -193,5 +207,4 @@ def segment(client, input_image, segment_classes):
     Utils.printINFO(f"Calculated semantic segmentation", client.window)
 
     return out_img
-
 

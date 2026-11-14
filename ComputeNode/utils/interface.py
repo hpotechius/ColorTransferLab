@@ -32,8 +32,8 @@ class MainWindow(QMainWindow):
     def __init__(self, main_server=None, signal_server=None, password=None):
         super().__init__()
         self.setWindowTitle("ColorTransferLab - ComputeNode - Version 1.0.0")
-        self.setGeometry(100, 100, 500, 700)
-        self.setFixedSize(500, 1000)
+        self.setGeometry(100, 100, 1000, 700)
+        self.setFixedSize(1000, 700)
         self.center()
 
         self.terminal = None
@@ -53,37 +53,37 @@ class MainWindow(QMainWindow):
         self.turn_user = "testuser"
         self.turn_pw = "testpw"
 
-        # Main widget and layout
+        # Main widget and two-column layout
         main_widget = QWidget()
-        main_layout = QVBoxLayout()
+        main_layout = QHBoxLayout()
+        information_widget = QWidget()
+        information_layout = QVBoxLayout()
 
         # Init Information Block
-        main_layout.addLayout(self.__init_information_block())
+        information_layout.addLayout(self.__init_information_block())
         spacer = QSpacerItem(20, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
-        main_layout.addItem(spacer)
+        information_layout.addItem(spacer)
  
         # Init Signal Server Block
-        main_layout.addLayout(self.__init_signalserver_block())
+        information_layout.addLayout(self.__init_signalserver_block())
         spacer = QSpacerItem(20, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
-        main_layout.addItem(spacer)    
+        information_layout.addItem(spacer)
 
         # Init Compute Node Block
-        main_layout.addLayout(self.__init_computenode_block())
+        information_layout.addLayout(self.__init_computenode_block())
         spacer = QSpacerItem(20, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
-        main_layout.addItem(spacer)    
+        information_layout.addItem(spacer)
 
         # Init Client Block
-        main_layout.addLayout(self.__init_client_block())
+        information_layout.addLayout(self.__init_client_block())
         spacer = QSpacerItem(20, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
-        main_layout.addItem(spacer)    
+        information_layout.addItem(spacer)
 
         # Init TURN Server Block
-        main_layout.addLayout(self.__init_turn_block())
+        information_layout.addLayout(self.__init_turn_block())
         spacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
-        main_layout.addItem(spacer)
+        information_layout.addItem(spacer)
 
-        # Init Terminal Block
-        main_layout.addWidget(self.__init_terminal_block())
         button = QPushButton(f"Connect to Signal Server")
         button.clicked.connect(self.on_button_click)
         buttonDB = QPushButton(f"Init User Study Database")
@@ -91,7 +91,13 @@ class MainWindow(QMainWindow):
         button_layout = QHBoxLayout()
         button_layout.addWidget(button)
         button_layout.addWidget(buttonDB)
-        main_layout.addLayout(button_layout)
+        information_layout.addLayout(button_layout)
+
+        information_widget.setLayout(information_layout)
+        main_layout.addWidget(information_widget, 1)
+
+        # Keep the terminal beside the information panels.
+        main_layout.addWidget(self.__init_terminal_block(), 1)
 
         # Set main widget and layout
         main_widget.setLayout(main_layout)
@@ -319,8 +325,7 @@ class MainWindow(QMainWindow):
     # ------------------------------------------------------------------------------------------------------------------
     def update_compute_node_privacy_pw(self):
         new_password = self.compute_node_privacy_pw_val.text()
-        if new_password:
-            self.compute_node_privacy_pw = new_password
+        self.compute_node_privacy_pw = new_password
 
     # ------------------------------------------------------------------------------------------------------------------
     # 
@@ -417,7 +422,7 @@ class MainWindow(QMainWindow):
 
         self.compute_node_privacy_pw_val = QLineEdit()
         self.compute_node_privacy_pw_val.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        self.compute_node_privacy_pw_val.returnPressed.connect(self.update_compute_node_privacy_pw)
+        self.compute_node_privacy_pw_val.textChanged.connect(self.update_compute_node_privacy_pw)
         self.compute_node_privacy_pw_val.setPlaceholderText(self.compute_node_privacy_pw)
         hbox_layout.addWidget(self.compute_node_privacy_pw_val)
 
@@ -584,9 +589,16 @@ class MainWindow(QMainWindow):
     # 
     # ------------------------------------------------------------------------------------------------------------------
     def set_client_box(self):
+        current_name = self.client_name.currentText()
         self.client_name.clear()
         if isinstance(self.connections_data, dict):
             self.client_name.addItems([str(k) for k in self.connections_data.keys()])
+        if current_name in self.connections_data:
+            self.client_name.setCurrentText(current_name)
+        elif not self.connections_data:
+            self.client_id.setText("null")
+            self.client_ip_address.setText("null")
+            self.set_client_status("null")
 
     # ------------------------------------------------------------------------------------------------------------------
     # 
@@ -611,7 +623,11 @@ class MainWindow(QMainWindow):
     # 
     # ------------------------------------------------------------------------------------------------------------------
     def append_text_to_terminal(self, text_edit, text):
+        scrollbar = text_edit.verticalScrollBar()
+        at_bottom = scrollbar.value() >= scrollbar.maximum()
         text_edit.append("[" + self.get_timestamp() + "] " + text)
+        if at_bottom:
+            scrollbar.setValue(scrollbar.maximum())
 
     # ------------------------------------------------------------------------------------------------------------------
     # 

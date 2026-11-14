@@ -13,6 +13,7 @@ import requests
 import geocoder
 import os
 import json
+import uuid
 from os import path 
 import socketio
 from PIL import Image as PILImage
@@ -88,7 +89,8 @@ class WebRTCClient:
         self.sio = socketio.AsyncClient(reconnection=True, reconnection_attempts=0, ssl_verify=False, request_timeout=600)
         self.connection_event = asyncio.Event()
         self.message = ""
-        self.chunk_size = 1048576 # 1MB 
+        # Keep binary DataChannel messages below the SCTP peer limit.
+        self.chunk_size = 64 * 1024
         self.signal_server = signal_server
         self.client_id = client_id
         self.window = window
@@ -134,18 +136,6 @@ class WebRTCClient:
         ip_adress = requests.get('https://api.ipify.org?format=json').json()['ip']
         country = geocoder.ip(ip_adress).country
 
-        await self.sio.connect(self.signal_server)
-        await self.sio.emit("register", 
-                            {
-                                "name": self.compute_node_name,
-                                "type": "ComputeNode",
-                                "client_id": self.client_id,
-                                "country": country,
-                                "privacy": self.compute_node_privacy
-                            })
-        
-        Utils.printINFO(f"Connected to Signal Server as {self.client_id}", self.window)
-
         @self.sio.on("message")
         async def handle_message(data):
             await handlerMessage(self, data)
@@ -155,14 +145,132 @@ class WebRTCClient:
             await handlerIpAddress(self, data)
 
         @self.sio.event
-        async def _disconnect():
+        async def disconnect():
             await handlerDisconnect(self)
 
+        @self.sio.event
+        async def connect():
+            await self.sio.emit(
+                "register",
+                {
+                    "name": self.compute_node_name,
+                    "type": "ComputeNode",
+                    "client_id": self.client_id,
+                    "country": country,
+                    "privacy": self.compute_node_privacy
+                }
+            )
+            Utils.printINFO(
+                f"Connected to Signal Server as {self.client_id}",
+                self.window,
+            )
+
+        await self.sio.connect(self.signal_server)
     # ------------------------------------------------------------------------------------------------------------------
     # 
     # ------------------------------------------------------------------------------------------------------------------
     async def send_message(self, data):
         await self.sio.emit("message", data)
+
+    async def on_relay_request(self, client_id, password, test_link=None):
+        if test_link is not None:
+            Utils.printWARN(
+                "WebSocket fallback is unavailable for user-study links.",
+                self.window,
+            )
+            return
+        if self.window.compute_node_privacy and (
+            password != self.window.compute_node_privacy_pw
+        ):
+            Utils.printWARN(f"Wrong password for WebSocket relay from {client_id}.", self.window)
+            await self.send_message({
+                "type": "error",
+                "reason": "invalid password",
+                "target": client_id,
+                "from": self.client_id,
+            })
+            return
+
+        old_connection = self.connections.pop(client_id, None)
+        if old_connection and old_connection.get("pc"):
+            await old_connection["pc"].close()
+        self.connections[client_id] = {
+            "pc": None,
+            "channel": None,
+            "type": "Client",
+            "transport": "relay",
+        }
+        self.connection_event.set()
+        self.window.set_compute_node_status("Connected")
+        client_keys = [
+            key for key, value in self.connections.items()
+            if isinstance(value, dict) and value.get("type") == "Client"
+        ]
+        participant_keys = [
+            key for key, value in self.connections.items()
+            if isinstance(value, dict) and value.get("type") == "Participant"
+        ]
+        await self.send_message({
+            "target": "server",
+            "from": self.client_id,
+            "message": "/putStatusRequest",
+            "data": {
+                "status": "Busy",
+                "connected_clients": client_keys,
+                "connected_participants": participant_keys,
+            },
+        })
+        await self.send_message({
+            "type": "relay_ready",
+            "target": client_id,
+            "from": self.client_id,
+        })
+        Utils.printINFO(f"WebSocket relay connected for {client_id}.", self.window)
+
+    async def on_relay_message(self, client_id, message):
+        connection = self.connections.get(client_id)
+        if not connection or connection.get("transport") != "relay":
+            return
+        if isinstance(message, bytes):
+            message = message.decode("utf-8")
+        elif isinstance(message, dict):
+            message = json.dumps(message)
+        await self.on_message(message, client_id)
+
+    async def on_relay_close(self, client_id):
+        connection = self.connections.pop(client_id, None)
+        if connection and connection.get("pc"):
+            await connection["pc"].close()
+        self._remove_client_from_interface(client_id)
+        if not self.connections:
+            self.connection_event.clear()
+            self.window.set_compute_node_status("Idle")
+        client_keys = [
+            key for key, value in self.connections.items()
+            if isinstance(value, dict) and value.get("type") == "Client"
+        ]
+        participant_keys = [
+            key for key, value in self.connections.items()
+            if isinstance(value, dict) and value.get("type") == "Participant"
+        ]
+        await self.send_message({
+            "target": "server",
+            "from": self.client_id,
+            "message": "/putStatusRequest",
+            "data": {
+                "status": "Busy",
+                "connected_clients": client_keys,
+                "connected_participants": participant_keys,
+            },
+        })
+        Utils.printINFO(f"WebSocket relay disconnected for {client_id}.", self.window)
+
+    def _remove_client_from_interface(self, client_id):
+        for key, value in list(self.window.connections_data.items()):
+            if isinstance(value, dict) and value.get("id") == client_id:
+                del self.window.connections_data[key]
+                self.window.set_client_box()
+                return
 
     # ------------------------------------------------------------------------------------------------------------------
     # 
@@ -194,16 +302,28 @@ class WebRTCClient:
 
         Utils.printSEND(f"Sending answer to target {from_client}", self.window)
 
-        # check if password is saved as test_link in participant table
-        conn = psycopg.connect("dbname=userstudy user=postgres password=postgres host=localhost port=5432")
-
-        # get set_id based on the set_name
-        with conn.cursor(row_factory=dict_row) as cur:
-            cur.execute("SELECT * FROM participant WHERE test_link = %s;", (test_link, ))
-            result = cur.fetchone()
-            valid = False
-            if result is not None:
-                valid = result["valid"]
+        result = None
+        valid = False
+        if test_link is not None:
+            # User-study links are validated against the optional PostgreSQL database.
+            try:
+                conn = psycopg.connect(
+                    "dbname=userstudy user=postgres password=postgres "
+                    "host=localhost port=5432"
+                )
+                with conn.cursor(row_factory=dict_row) as cur:
+                    cur.execute(
+                        "SELECT * FROM participant WHERE test_link = %s;",
+                        (test_link,),
+                    )
+                    result = cur.fetchone()
+                    valid = result is not None and result["valid"]
+                conn.close()
+            except psycopg.OperationalError as error:
+                Utils.printINFO(
+                    f"User-study database unavailable: {error}",
+                    self.window,
+                )
 
         # Check if Password is correct
         if (test_link is None and (password == self.window.compute_node_privacy_pw or self.window.compute_node_privacy == False)):
@@ -469,6 +589,32 @@ class WebRTCClient:
                 channel.send(message)
             else:
                 channel.send(json.dumps(message))
+        elif self.connections.get(client_id, {}).get("transport") == "relay":
+            payload = message if isBytes else json.dumps(message)
+            if isinstance(payload, str) and len(payload) > 48 * 1024:
+                chunk_size = 48 * 1024
+                chunks = [
+                    payload[offset:offset + chunk_size]
+                    for offset in range(0, len(payload), chunk_size)
+                ]
+                transfer_id = str(uuid.uuid4())
+                for index, chunk in enumerate(chunks):
+                    asyncio.create_task(self.send_message({
+                        "type": "relay_chunk",
+                        "target": client_id,
+                        "from": self.client_id,
+                        "transfer_id": transfer_id,
+                        "index": index,
+                        "total": len(chunks),
+                        "data": chunk,
+                    }))
+            else:
+                asyncio.create_task(self.send_message({
+                    "type": "relay_data",
+                    "target": client_id,
+                    "from": self.client_id,
+                    "data": payload,
+                }))
         else:
             Utils.printINFO(f"DataChannel for {client_id} is not open yet. Cannot send message.", self.window)
 
@@ -496,14 +642,7 @@ class WebRTCClient:
             print(f"Connection with {client_id} lost. Cleaning up...")
 
             # Remove the connection data
-            to_remove = None
-            for key, value in self.window.connections_data.items():
-                if isinstance(value, dict) and value.get("id") == client_id:
-                    to_remove = key
-                    break
-            if to_remove is not None:
-                del self.window.connections_data[to_remove]
-                
+            self._remove_client_from_interface(client_id)
 
             if client_id in self.connections:
                 del self.connections[client_id]

@@ -1,16 +1,21 @@
-# React + Vite
+---
+title: ColorTransferLab Frontend
+emoji: 🎨
+colorFrom: indigo
+colorTo: red
+sdk: docker
+app_port: 7860
+pinned: false
+---
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# ColorTransferLab Frontend
 
-Currently, two official plugins are available:
+Web frontend for the ColorTransferLab application.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+The local Vite development path remains `/ColorTransferLab/`. The Hugging Face
+Space is built and served at the domain root.
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+WebRTC is preferred for ComputeNode connections. If ICE negotiation fails,
+the frontend automatically falls back to a Socket.IO/WebSocket relay through
+the configured signal server. The signal server must therefore remain
+reachable by both the frontend and the ComputeNode.

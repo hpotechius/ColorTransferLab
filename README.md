@@ -59,11 +59,25 @@ In this setup, the signaling server is provided via https://signal.potechius.com
    cd ComputeNode
    python main_computenode.py
    ```
-   - During the first run, the Compute Node will download the dataset from https://huggingface.co/datasets/hpotechius/ColorTransferLabData/resolve/main/ColorTransferLab_Database.zip.
+   - During the first run, the Compute Node will download the reduced dataset from https://huggingface.co/datasets/hpotechius/ColorTransferLabData/resolve/main/ColorTransferLab_Database_reduced.zip.
    - The Compute Node will automatically verify whether the specified signaling server is online.
    - An optional password can be set to limit access.
    - A TURN server can be specified as a fallback.
-   
+
+   To use the browser-based Compute Node interface instead of the Qt window,
+   set the web login password and start the web mode:
+   ```
+   export COMPUTENODE_WEB_PASSWORD='<your-web-password>'
+   python main_computenode.py --web
+   ```
+   Open `http://127.0.0.1:8080` in a browser and log in with the configured
+   username `hpotechius` and password. The bind address and port can be
+   changed, for example:
+   ```
+   COMPUTENODE_WEB_PASSWORD='<your-web-password>' \
+     python main_computenode.py --web --web-host 0.0.0.0 --web-port 8080
+   ```
+
 5. Connect to Signal Server
    - Press the "Connect to Signal Server" button (https://signal.potechius.com).
    - The Compute Node will now enter a waiting state until a client connects to it.

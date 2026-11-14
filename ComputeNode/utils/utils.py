@@ -15,6 +15,7 @@ import zipfile
 import asyncio
 import random
 import string
+import shutil
 from concurrent.futures import ThreadPoolExecutor
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -155,6 +156,8 @@ class Utils:
         out = []
 
         def get_directory_content(p, arr, name):
+            if not os.path.isdir(p):
+                return
             directory_contents = os.listdir(p)
             folder = {"name": name, "folders": [], "files": []}
             for item in directory_contents:
@@ -209,6 +212,25 @@ class Utils:
         with zipfile.ZipFile(zip_path, 'r') as zip_ref:
             zip_ref.extractall(extract_to_folder)
 
+        nested_folder = os.path.join(extract_to_folder, "ColorTransferLab_Database")
+        if os.path.isdir(nested_folder):
+            for entry in os.listdir(nested_folder):
+                source = os.path.join(nested_folder, entry)
+                target = os.path.join(extract_to_folder, entry)
+                if os.path.exists(target):
+                    if os.path.isdir(source) and os.path.isdir(target):
+                        shutil.copytree(source, target, dirs_exist_ok=True)
+                    else:
+                        os.remove(target)
+                        shutil.move(source, target)
+                else:
+                    shutil.move(source, target)
+            shutil.rmtree(nested_folder)
+
+        macos_metadata = os.path.join(extract_to_folder, "__MACOSX")
+        if os.path.isdir(macos_metadata):
+            shutil.rmtree(macos_metadata)
+
     # ----------------------------------------------------------------------------------------------------------------------
     # Downloads and extracts the database if not already present. The archive will be deleted after extraction.
     # ----------------------------------------------------------------------------------------------------------------------
@@ -216,10 +238,18 @@ class Utils:
         folder_path_data = os.path.abspath("files") + "/data"
         if not Utils.check_folder_exists(folder_path_data):
             Utils.printINFO(f"Download Database...", window)
-            # url = "https://potechius.com/Downloads/Datasets/ColorTransferLab_Database.zip"
-            url = "https://huggingface.co/datasets/hpotechius/ColorTransferLabData/resolve/main/ColorTransferLab_Database.zip"
+            archive_name = (
+                "ColorTransferLab_Database_reduced.zip"
+                if os.environ.get("SPACE_ID")
+                else "ColorTransferLab_Database.zip"
+            )
+            url = (
+                "https://huggingface.co/datasets/hpotechius/ColorTransferLabData/"
+                f"resolve/main/{archive_name}"
+            )
             absolute_folder_path = os.path.abspath("files")
-            local_filename = absolute_folder_path + "/ColorTransferLab_Database.zip"
+            os.makedirs(absolute_folder_path, exist_ok=True)
+            local_filename = os.path.join(absolute_folder_path, archive_name)
 
             loop = asyncio.get_event_loop()
             with ThreadPoolExecutor() as pool:

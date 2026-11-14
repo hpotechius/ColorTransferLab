@@ -38,6 +38,7 @@ export default function Server({rightBottomHeight}) {
     -------------------------------------------------------------------------------------------------------------*/
     const [computeNodes, setComputeNodes] = useState({});
     const [connectedKey, setConnectedKey] = useState(null);
+    const [relayConnectedKey, setRelayConnectedKey] = useState(null);
     const [password, setPassword] = useState(config.password);
 
     /*------------------------------------------------------------------------------------------------------------
@@ -67,6 +68,9 @@ export default function Server({rightBottomHeight}) {
             } else if (state === "disconnected" || state === "failed" || state === "closed") {
                 setConnectedKey(null);
             }
+        };
+        rtc.onRelayStateChange = ({ active, serverKey }) => {
+            setRelayConnectedKey(active ? serverKey : null);
         };
     }, [rtc]);
 
@@ -100,6 +104,9 @@ export default function Server({rightBottomHeight}) {
             rtc.disconnect();
 
         setConnectedKey(null);
+        setRelayConnectedKey(null);
+        localStorage.clear();
+        window.location.reload();
     }
 
     /**************************************************************************************************************
@@ -124,6 +131,7 @@ export default function Server({rightBottomHeight}) {
             <div className="server_content">
                 {Object.entries(computeNodes).map(([key, entry]) => {
                     const isActive = key === connectedKey;
+                    const isRelayActive = key === relayConnectedKey;
                     return (
                         <div key={key} style={{ display: "flex", alignItems: "center" }}>
                             <button
@@ -135,22 +143,27 @@ export default function Server({rightBottomHeight}) {
                                             border: "1px solid #4caf50",
                                             backgroundColor: "#1b1b1b"
                                         }
+                                        : isRelayActive
+                                        ? {
+                                            border: "1px solid #2196f3",
+                                            backgroundColor: "#1b1b1b"
+                                        }
                                         : {}
                                 }
-                                disabled={isActive}
+                                disabled={isActive || isRelayActive}
                             >
                                 {entry.privacy ? 
                                     <PublicOffTwoToneIcon className="server-button-icon"
-                                        style={{color: isActive ? "#4caf50" : undefined}}
+                                        style={{color: isActive ? "#4caf50" : isRelayActive ? "#2196f3" : undefined}}
                                     /> 
                                     :
                                     <PublicTwoToneIcon className="server-button-icon"
-                                        style={{color: isActive ? "#4caf50" : undefined}}
+                                        style={{color: isActive ? "#4caf50" : isRelayActive ? "#2196f3" : undefined}}
                                     /> 
                                 }
                                 {entry.name}
                             </button>
-                            {isActive && (
+                            {(isActive || isRelayActive) && (
                                 <button className='server_exit_button'
                                     title="Disconnect"
                                     onClick={handleDisconnect}

@@ -140,7 +140,7 @@ export default function LandingPage() {
                                 <model-viewer
                                     ref={modelViewerRef}
                                     className="landingpage-modelviewer"
-                                    src="/ColorTransferLab/models/Achat.glb"
+                                    src={`${import.meta.env.BASE_URL}models/Achat.glb`}
                                     alt="3D model preview"
                                     camera-controls
                                     auto-rotate

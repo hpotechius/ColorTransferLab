@@ -15,6 +15,7 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import PersonSearchIcon from '@mui/icons-material/PersonSearch';
 import Button from "@mui/material/Button";
 import BackspaceIcon from '@mui/icons-material/Backspace';
+import {useWebRTC} from '@/Utils/WebRTCProvider';
 
 /******************************************************************************************************************
  ******************************************************************************************************************
@@ -26,6 +27,7 @@ import BackspaceIcon from '@mui/icons-material/Backspace';
  ******************************************************************************************************************
  ******************************************************************************************************************/
  export default function Header({showLeft, setShowLeft, showRight, setShowRight, showBottom, setShowBottom, setIsUserStudyOpen, isUserStudyOpen}) {
+     const {rtc} = useWebRTC();
     /**************************************************************************************************************
      **************************************************************************************************************
      ** STATES & REFERENCES & VARIABLES
@@ -132,8 +134,9 @@ import BackspaceIcon from '@mui/icons-material/Backspace';
      * Resets the application state by removing all entries from localStorage and reloading the page.
      **************************************************************************************************************/
     const handleResetClick = () => {
+        rtc.disconnect();
         localStorage.clear();
-        window.location.reload();
+        window.setTimeout(() => window.location.reload(), 150);
     };
 
     /**************************************************************************************************************
@@ -152,7 +155,7 @@ import BackspaceIcon from '@mui/icons-material/Backspace';
         <Box className="header">
             <img 
                 className="header-logo" 
-                src="/ColorTransferLab/logo.png" 
+                src={`${import.meta.env.BASE_URL}logo.png`}
                 alt="HMP Logo" 
                 title="Personal Website of Herbert M. Potechius"
                 onClick={handlePersonalClick}

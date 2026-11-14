@@ -41,7 +41,7 @@ export default function IntroModification({ activeTab }) {
     -- VARIABLES
     -------------------------------------------------------------------------------------------------------------*/
     const { selectedTestType } = useSelectionUserStudy();
-    const {rtc} = useWebRTC();
+    const {rtc, dataChannelOpen} = useWebRTC();
 
     /**************************************************************************************************************
      **************************************************************************************************************
@@ -57,13 +57,15 @@ export default function IntroModification({ activeTab }) {
             console.debug("RECV", `[Compute Node] Introduction data received for test type ${selectedTestType}: `, data);
             setIntroductionText(data[0]?.text);
         };
-    }, [rtc]);
+    }, [rtc, selectedTestType]);
 
     /**************************************************************************************************************
      * Sends a request to the compute node for introduction data.
      **************************************************************************************************************/
     useEffect(() => {
-        const test_type = selectedTestType ? selectedTestType : "rating";
+        if (!dataChannelOpen) return;
+
+        const test_type = selectedTestType || "rating";
 
         const data_send = {
             command: "/getIntroductionsRequest",
@@ -72,7 +74,7 @@ export default function IntroModification({ activeTab }) {
 
         console.debug("SEND", "[COMPUTE NODE] Request to apply User Study introductions via command /getIntroductionsRequest", data_send);
         rtc.sendMessage(JSON.stringify(data_send));
-    }, [selectedTestType]);
+    }, [dataChannelOpen, rtc, selectedTestType]);
 
     /**************************************************************************************************************
      **************************************************************************************************************
@@ -89,7 +91,7 @@ export default function IntroModification({ activeTab }) {
 
         let data_send = {
             command: "/putIntroductionsRequest",
-            data: {text: newText, test_type: selectedTestType}
+            data: {text: newText, test_type: selectedTestType || "rating"}
         };
         
         console.debug("SEND", "[COMPUTE NODE] Request to apply User Study introduction via command /putIntroductionsRequest", data_send);

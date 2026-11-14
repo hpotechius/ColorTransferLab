@@ -52,6 +52,16 @@ export default function ViewHeader({viewButtons, setActiveDownload, setActiveMob
      * Handler for requesting the compute node to start the Color Transfer
      **************************************************************************************************************/
     const handleClickRun = () => {
+        if (!selectedSourcePath || !selectedAlgorithm) {
+            console.warn("Select a source image and algorithm before running color transfer.");
+            return;
+        }
+
+        if (selectedAlgorithm.type !== "Colorization" && !selectedReferencePath) {
+            console.warn("A reference image is required for this algorithm.");
+            return;
+        }
+
         // simple random string helper, length 5 by default
         const generateOutputName = (length = 5) => {
             const now = new Date();
@@ -76,7 +86,7 @@ export default function ViewHeader({viewButtons, setActiveDownload, setActiveMob
                 approach: selectedAlgorithm.key,
                 options: selectedOptions,
                 source: selectedSourcePath,
-                reference: selectedReferencePath,
+                reference: selectedReferencePath || null,
                 output: randomOutputPath,
                 mode: "original"
             }
