@@ -11,7 +11,7 @@ This repository is part of a collection of three repositories. See the links bel
 
 ColorTransferLab is a web-based user interface for the application of **color transfer**, **style transfer**, and **colorization** algorithms on different data types, including **Images**, **Videos**, **Point Clouds**, **Meshes**, **Light Fields**, **Volumetric Videos**, and **Gaussian Splattings**, with the possibility to visualize these data types. Additionally, 20 evaluation metrics are included to assess color transfer results. It is based on our previous tool ColorTransferLab.
 
-This tool is based on WebRTC communication between the client, which is the [User Interface](https://potechius.com/ColorTransferLab), and the compute node, which applies computations using the Python library [ColorTransferLib](https://github.com/hpotechius/ColorTransferLib). This library contains available algorithms and image quality assessment metrics.
+This tool is based on WebRTC communication between the client, which is the [User Interface](https://colortransferlab.potechius.com), and the compute node, which applies computations using the Python library [ColorTransferLib](https://github.com/hpotechius/ColorTransferLib). This library contains available algorithms and image quality assessment metrics.
 
 ## 1. System Architecture
 <img width="2084" height="686" alt="ColorTransferLabV3" src="https://github.com/user-attachments/assets/03b9bd5d-af33-4850-b6ab-47d6a1dfe060" />
@@ -19,7 +19,7 @@ This tool is based on WebRTC communication between the client, which is the [Use
 This system consists of four components: **Client**, **Web Server**, **Signaling Server**, and **Compute Node**, which will be explained in the following sections.
 
 ### 1.1 Client and Web Server
-The client is the user interface, served by a web server available at https://potechius.com/ColorTransferLab or self-hosted. It allows users to visualize data and connect to an available Compute Node to apply the aforementioned algorithms.
+The client is the user interface, served by a web server available at https://colortransferlab.potechius.com or self-hosted. It allows users to visualize data and connect to an available Compute Node to apply the aforementioned algorithms.
 
 ### 1.2 Signaling Server
 <img alt="06_signalserverinterface" src="https://github.com/user-attachments/assets/bdc2bfa2-019f-4896-ae82-a7169c6e7f1d" />
@@ -37,7 +37,7 @@ The above image illustrates the three stages of the compute node:
 - Connected Stage: Client and compute node are connected for peer-to-peer data transmission.
 
 ## 2. Setup
-In this setup, the signaling server is provided via https://signal.potechius.com, and the user interface is served through the web server at https://potechius.com/ColorTransferLab. The only instance that must be provided by the user is the compute node. Notably, both the signaling server and the web server are included in this repository and can be self-hosted. The following steps must be followed to run the compute node and test the application.
+In this setup, the signaling server is provided via https://signal.potechius.com, and the user interface is served through the web server at https://colortransferlab.potechius.com. The only instance that must be provided by the user is the compute node. Notably, both the signaling server and the web server are included in this repository and can be self-hosted. The following steps must be followed to run the compute node and test the application.
 
 ### 2.1 Setup (Compute Node only)
 1. Clone the repository and go into the directory
@@ -82,7 +82,7 @@ In this setup, the signaling server is provided via https://signal.potechius.com
    - Press the "Connect to Signal Server" button (https://signal.potechius.com).
    - The Compute Node will now enter a waiting state until a client connects to it.
 6. Connect to Compute Node
-   - Open https://potechius.com/ColorTransferLab in any browser.
+   - Open https://colortransferlab.potechius.com in any browser.
    - The Compute Node should now appear in the SERVER section of the web interface. Press the button to view all available algorithms and data.
 
 ### 2.2 Local Setup
@@ -106,7 +106,7 @@ In the file `WebServer/src/config.json` change the variable `signalServerURL` to
    npm install
    npm run dev
    ```
-   The tool will be available at http://localhost:5173/ColorTransferLab.
+   The tool will be available at http://localhost:5173.
 #### Compute Node   
 In the file `ComputeNode/main_computenode.py` change the Variable `SIGNAL_SERVER` from https://signal.potechius.com to http://localhost:8071.
 ```
