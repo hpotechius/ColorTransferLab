@@ -69,7 +69,7 @@ async def wait_for_connection(client, window=None, timeout=20.0):
             # fallback: clear event and reset peer connection
             client.connection_event.clear()
             if hasattr(client, "reset_peer_connection"):
-                client.reset_peer_connection()
+                await client.reset_peer_connection()
         return False
 
 # ------------------------------------------------------------------------------------------------------------------
@@ -90,13 +90,16 @@ async def main_server(window=None):
         compute_node_privacy=window.compute_node_privacy,
         window=window
     )
-    try:
-        await client.connect_to_signal_server()
-    except Exception as e:
-        Utils.printINFO(f"Error while connecting to signal server: {e}", window)
-        import traceback
-        traceback.print_exc()
-        return
+    while not client.sio.connected:
+        try:
+            await client.connect_to_signal_server()
+        except Exception as e:
+            window.set_signal_server_status("Offline")
+            Utils.printWARN(
+                f"Error while connecting to signal server: {e}. Retrying...",
+                window,
+            )
+            await asyncio.sleep(5)
 
     # Update the status of the client to online in the user interface
     window.set_signal_server_status("Connected")

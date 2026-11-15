@@ -57,6 +57,6 @@ async def handlerDisconnect(webrtcclient):
     except Exception:
         pass
 
-    # Reset peer connection to clear old ICE candidates and states, so that we start fresh on reconnection
-    webrtcclient.reset_peer_connection()
+    # Reset peer connections to clear old ICE candidates and states.
+    await webrtcclient.reset_peer_connection()
     

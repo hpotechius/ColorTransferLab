@@ -384,6 +384,8 @@ class WebInterface:
         await site.start()
         self.print_to_terminal(f"Web interface available at http://{self.host}:{self.port}")
         asyncio.create_task(Utils.download_and_extract(self))
+        if self._connection_task is None or self._connection_task.done():
+            self._connection_task = asyncio.create_task(self.main_server(self))
         reachable = Utils.is_address_reachable(self.signal_server)
         self.set_signal_server_status("Online" if reachable else "Offline")
         await asyncio.Event().wait()

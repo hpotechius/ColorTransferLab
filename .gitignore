@@ -16,3 +16,4 @@ SignalingServer/env/
 
 __pycache__/
 __MACOSX/
+.DS_Store

@@ -86,7 +86,14 @@ COMMAND_HANDLERS_STUDY = {
 # ----------------------------------------------------------------------------------------------------------------------
 class WebRTCClient:
     def __init__(self, message=None, signal_server=None, client_id=None, window=None, compute_node_name=None, compute_node_privacy=None):
-        self.sio = socketio.AsyncClient(reconnection=True, reconnection_attempts=0, ssl_verify=False, request_timeout=600)
+        self.sio = socketio.AsyncClient(
+            reconnection=True,
+            reconnection_attempts=0,
+            reconnection_delay=1,
+            reconnection_delay_max=30,
+            ssl_verify=False,
+            request_timeout=600,
+        )
         self.connection_event = asyncio.Event()
         self.message = ""
         # Keep binary DataChannel messages below the SCTP peer limit.
@@ -150,6 +157,7 @@ class WebRTCClient:
 
         @self.sio.event
         async def connect():
+            self.window.set_signal_server_status("Connected")
             await self.sio.emit(
                 "register",
                 {
@@ -166,6 +174,18 @@ class WebRTCClient:
             )
 
         await self.sio.connect(self.signal_server)
+
+    async def reset_peer_connection(self):
+        connections = list(self.connections.values())
+        self.connections.clear()
+        for connection in connections:
+            pc = connection.get("pc") if isinstance(connection, dict) else None
+            if pc:
+                await pc.close()
+        self.window.connections_data.clear()
+        self.window.set_client_box()
+        self.window.set_compute_node_status("Idle")
+        self.connection_event.clear()
     # ------------------------------------------------------------------------------------------------------------------
     # 
     # ------------------------------------------------------------------------------------------------------------------

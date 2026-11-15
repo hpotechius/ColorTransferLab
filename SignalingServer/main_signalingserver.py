@@ -15,7 +15,7 @@ import time
 import signal
 
 app = Flask(__name__)
-socketio = SocketIO(app, cors_allowed_origins="*", ping_timeout=600, ping_interval=30)
+socketio = SocketIO(app, cors_allowed_origins="*", ping_timeout=60, ping_interval=25)
 
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
@@ -236,8 +236,10 @@ def get_country_from_ip(ip_address):
 
 def get_registered_country(data, ip_address):
     reported_country = data.get("country")
-    if isinstance(reported_country, str) and reported_country.strip():
-        return reported_country.strip()
+    if isinstance(reported_country, str):
+        country = reported_country.strip()
+        if country and country.lower() not in {"not found", "unknown", "null"}:
+            return country
     return get_country_from_ip(ip_address)
 
 
@@ -265,6 +267,18 @@ def on_register(data):
         "connected_participants": [],
         "privacy": False
     }
+
+    instance_store = {
+        "Client": client_instances,
+        "Participant": participant_instances,
+        "ComputeNode": computenode_instances,
+    }.get(data["type"])
+    if instance_store is None:
+        print(f"{ORANGE}[WARN] Unknown registration type: {data['type']}{RESET}")
+        return
+
+    # Replace an older registration for the same logical instance.
+    instance_store.pop(client_id, None)
 
     if data["type"] == "Client":
         print(f"{ORANGE}[INFO] Register Client {client_id}{RESET}")
@@ -327,7 +341,7 @@ def remove_old_instances():
         socketio.emit('update_clients', {**client_instances, **participant_instances, **computenode_instances})
 
         # Sleep for a minute before checking again
-        time.sleep(60)
+        socketio.sleep(60)
 
 # ------------------------------------------------------------------------------------------------------------------
 # Main entry point for the Signal Server
@@ -337,4 +351,5 @@ if __name__ == "__main__":
     signal.signal(signal.SIGINT, signal_handler)
     
     print(f"{ORANGE}[INFO] Starting Signal Server{RESET}")
+    socketio.start_background_task(remove_old_instances)
     socketio.run(app, host="0.0.0.0", port=8071, allow_unsafe_werkzeug=True)

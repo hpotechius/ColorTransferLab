@@ -39,6 +39,7 @@ class MainWindow(QMainWindow):
         self.terminal = None
         self.signal_server_status = None
         self.compute_node_status = None
+        self._connection_task = None
 
         self.connections_data = {}
 
@@ -659,7 +660,8 @@ class MainWindow(QMainWindow):
     # ------------------------------------------------------------------------------------------------------------------
     @asyncSlot()
     async def on_button_click(self):
-        asyncio.ensure_future(self.main_server(self))
+        if self._connection_task is None or self._connection_task.done():
+            self._connection_task = asyncio.ensure_future(self.main_server(self))
 
     # ------------------------------------------------------------------------------------------------------------------
     # 
@@ -779,6 +781,7 @@ class Interface():
 
         # Download and extract database in background thread to prevent blocking of user interface
         asyncio.ensure_future(Utils.download_and_extract(window))
+        window._connection_task = asyncio.ensure_future(main_server(window))
 
         ss_reachable = Utils.is_address_reachable(signal_server)
         if ss_reachable:
