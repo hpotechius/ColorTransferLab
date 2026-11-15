@@ -331,11 +331,8 @@ def remove_old_instances():
                 print(f"{ORANGE}[INFO] Removing old participant instance: {participant_id}{RESET}")
                 del participant_instances[participant_id]
 
-        # Check and remove old compute node instances
-        for computenode_id, computenode_data in list(computenode_instances.items()):
-            if current_time - computenode_data["register_time"] >= ten_minutes:
-                print(f"{ORANGE}[INFO] Removing old compute node instance: {computenode_id}{RESET}")
-                del computenode_instances[computenode_id]
+        # Active ComputeNodes are removed by the Socket.IO disconnect handler.
+        # They must not be removed based on registration age while still connected.
 
         # Emit the updated list of clients and compute nodes to the interface
         socketio.emit('update_clients', {**client_instances, **participant_instances, **computenode_instances})
